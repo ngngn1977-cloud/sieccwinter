@@ -1,0 +1,232 @@
+{
+  "name": "cumulative_results",
+  "file": "cumulative_results.csv",
+  "primary_key": "result_id",
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "result_id",
+      "type": "string"
+    },
+    {
+      "name": "outcome",
+      "type": "string"
+    },
+    {
+      "name": "outcome_family",
+      "type": "string"
+    },
+    {
+      "name": "metric",
+      "type": "string"
+    },
+    {
+      "name": "exposure",
+      "type": "string"
+    },
+    {
+      "name": "exposure_unit",
+      "type": "string"
+    },
+    {
+      "name": "window_or_lag",
+      "type": "integer"
+    },
+    {
+      "name": "transformation",
+      "type": "string"
+    },
+    {
+      "name": "model_tier",
+      "type": "string"
+    },
+    {
+      "name": "primary_role",
+      "type": "string"
+    },
+    {
+      "name": "status",
+      "type": "string"
+    },
+    {
+      "name": "not_estimable_reason",
+      "type": "string"
+    },
+    {
+      "name": "separation_status",
+      "type": "string"
+    },
+    {
+      "name": "convergence",
+      "type": "boolean"
+    },
+    {
+      "name": "n",
+      "type": "number"
+    },
+    {
+      "name": "event_count",
+      "type": "number"
+    },
+    {
+      "name": "non_event_count",
+      "type": "number"
+    },
+    {
+      "name": "parameter_count",
+      "type": "number"
+    },
+    {
+      "name": "residual_df",
+      "type": "number"
+    },
+    {
+      "name": "rank",
+      "type": "number"
+    },
+    {
+      "name": "coefficient",
+      "type": "number"
+    },
+    {
+      "name": "model_based_se",
+      "type": "number"
+    },
+    {
+      "name": "robust_hc3_se",
+      "type": "number"
+    },
+    {
+      "name": "statistic",
+      "type": "number"
+    },
+    {
+      "name": "robust_statistic",
+      "type": "number"
+    },
+    {
+      "name": "ci_lower",
+      "type": "number"
+    },
+    {
+      "name": "ci_upper",
+      "type": "number"
+    },
+    {
+      "name": "nominal_p",
+      "type": "number"
+    },
+    {
+      "name": "standardised_effect",
+      "type": "number"
+    },
+    {
+      "name": "iqr_effect",
+      "type": "number"
+    },
+    {
+      "name": "odds_ratio_raw",
+      "type": "number"
+    },
+    {
+      "name": "odds_ratio_sd",
+      "type": "number"
+    },
+    {
+      "name": "odds_ratio_iqr",
+      "type": "number"
+    },
+    {
+      "name": "lr_statistic",
+      "type": "number"
+    },
+    {
+      "name": "lr_df",
+      "type": "number"
+    },
+    {
+      "name": "lr_p",
+      "type": "number"
+    },
+    {
+      "name": "model_f",
+      "type": "number"
+    },
+    {
+      "name": "model_f_p",
+      "type": "number"
+    },
+    {
+      "name": "r_squared",
+      "type": "number"
+    },
+    {
+      "name": "adjusted_r_squared",
+      "type": "number"
+    },
+    {
+      "name": "partial_r_squared_weather",
+      "type": "number"
+    },
+    {
+      "name": "nagelkerke_r_squared",
+      "type": "number"
+    },
+    {
+      "name": "aic",
+      "type": "number"
+    },
+    {
+      "name": "aicc",
+      "type": "number"
+    },
+    {
+      "name": "residual_rmse",
+      "type": "number"
+    },
+    {
+      "name": "brier_score",
+      "type": "number"
+    },
+    {
+      "name": "log_loss",
+      "type": "number"
+    },
+    {
+      "name": "auc",
+      "type": "number"
+    },
+    {
+      "name": "exposure_sd",
+      "type": "number"
+    },
+    {
+      "name": "exposure_iqr",
+      "type": "number"
+    },
+    {
+      "name": "q10",
+      "type": "number"
+    },
+    {
+      "name": "q80",
+      "type": "number"
+    },
+    {
+      "name": "q90",
+      "type": "number"
+    },
+    {
+      "name": "multiplicity_family_q10",
+      "type": "string"
+    },
+    {
+      "name": "multiplicity_family_q80",
+      "type": "string"
+    },
+    {
+      "name": "multiplicity_family_q90",
+      "type": "string"
+    }
+  ]
+}

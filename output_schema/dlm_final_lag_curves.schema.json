@@ -1,0 +1,40 @@
+{
+  "name": "dlm_final_lag_curves",
+  "file": "dlm_final_lag_curves.csv",
+  "primary_key": ["result_id", "lag"],
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "result_id",
+      "type": "string"
+    },
+    {
+      "name": "lag",
+      "type": "integer"
+    },
+    {
+      "name": "estimate",
+      "type": "number"
+    },
+    {
+      "name": "standard_error",
+      "type": "number"
+    },
+    {
+      "name": "lower_95",
+      "type": "number"
+    },
+    {
+      "name": "upper_95",
+      "type": "number"
+    },
+    {
+      "name": "simultaneous_lower_95",
+      "type": "number"
+    },
+    {
+      "name": "simultaneous_upper_95",
+      "type": "number"
+    }
+  ]
+}

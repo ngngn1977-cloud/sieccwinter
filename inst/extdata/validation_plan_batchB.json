@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "batch": "B",
+  "description": "Batch B validation plan, separate from the accepted core plan (validation_plan.json) and the Batch A plan (validation_plan_batchA.json). Every reference listed here is required: an absent, undeclared or incomplete reference FAILS. References are column selections (and renamings declared in the bundle's provenance table) of the authoritative frozen V1.4 aggregate outputs; no output of the new package is used as a reference. Tolerances are the existing named set 'cumulative' (exact 1e-12; within 1e-7 abs + 1e-6 rel); no tolerance is changed or added. Agreement with the frozen estimates and independent mathematical verification are separate requirements (see batch_b_math_verification.csv).",
+  "firth_legacy_convergence": "The frozen Firth iteration stops when the parameter change is <= 1e-8 after step-halving, and the recorded adjusted score of the frozen fits is up to ~1e-4. Coefficient and interval-limit cells that differ from the frozen values beyond the cumulative tolerance are checked, and only those, against the first-order bound sqrt(p) * ||row_exposure(I^-1)||_2 * U_frozen, where U_frozen is the adjusted score recorded by the frozen run (reference column legacy_adjusted_score_max_abs). Cells inside the bound are labelled DIFFERENT_EXPLAINED_BY_LEGACY_CONVERGENCE and the reference status is PASS_EXPLAINED_BY_LEGACY_CONVERGENCE (reported as PASS_WITH_DOCUMENTED_LEGACY_LIMITATION in the run status, never as plain PASS). Cells outside the bound, and every standard-error cell, are never excused.",
+  "references": [
+    {
+      "name": "batchB_firth", "required": true, "scope": "Batch B: Firth logistic sensitivity of the 560 binary cumulative specifications (8 metrics x 10 windows x 7 tiers); exposure coefficient, standard error and Wald interval from the penalised expected information; no p-value and no multiplicity family are documented",
+      "files": ["batchB_firth_reference.csv"], "keys": ["outcome", "metric", "window_or_lag", "model_tier"], "result": "firth_sensitivity", "tolerance": "cumulative", "legacy_convergence_bound": true,
+      "expected_records_by_file": { "batchB_firth_reference.csv": 560 },
+      "required_columns": ["coefficient", "standard_error", "ci_lower", "ci_upper"]
+    },
+    {
+      "name": "batchB_ordinal", "required": true, "scope": "Batch B: ordinal (proportional-odds, MASS::polr) sensitivity of the original 1-4 integration score; M2-L; 8 metrics x 10 windows; Wald p, OR per SD, BH over 80 (stored as q80_ordinal, separate from the primary cumulative q80)",
+      "files": ["batchB_ordinal_reference.csv"], "keys": ["outcome", "metric", "window_or_lag"], "result": "ordinal_integration", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchB_ordinal_reference.csv": 80 },
+      "required_columns": ["n", "coefficient", "se", "odds_ratio", "p", "q80_ordinal"]
+    },
+    {
+      "name": "batchB_transformations", "required": true, "scope": "Batch B: exposure transformations (raw, z, signed-log z, exp z for 8 metrics; log1p and sqrt for the 2 sum-type metrics) of the M2-L model; 1,080 specifications; BH per outcome (360) and global (1,080)",
+      "files": ["batchB_transformations_reference.csv"], "keys": ["outcome", "metric", "window_or_lag", "transformation"], "result": "exposure_transformations", "tolerance": "cumulative", "retain_all_rows": true,
+      "expected_records_by_file": { "batchB_transformations_reference.csv": 1080 },
+      "required_columns": ["n", "coefficient", "model_based_se", "robust_hc3_se", "statistic", "robust_statistic", "ci_lower", "ci_upper", "nominal_p", "standardised_effect", "iqr_effect", "odds_ratio_sd", "lr_p", "model_f_p", "aic", "aicc", "exposure_sd", "exposure_iqr", "q_transformation_outcome", "q_transformation_global"]
+    },
+    {
+      "name": "batchB_nonlinear", "required": true, "scope": "Batch B: nonlinear exposure forms (centred quadratic, natural spline df 2) for the 6 mean-type metrics, M2-L; joint Wald (HC3 for continuous outcomes, model-based for the binary outcome); 360 specifications; BH per outcome x form (60) and global (360)",
+      "files": ["batchB_nonlinear_reference.csv"], "keys": ["outcome", "metric", "window_or_lag", "form"], "result": "nonlinear_forms", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchB_nonlinear_reference.csv": 360 },
+      "required_columns": ["n", "joint_statistic", "joint_df", "joint_p", "aic", "aicc", "q_outcome_form", "q_global"]
+    }
+  ]
+}

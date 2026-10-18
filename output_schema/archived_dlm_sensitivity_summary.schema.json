@@ -1,0 +1,104 @@
+{
+  "name": "archived_dlm_sensitivity_summary",
+  "file": "archived_dlm_sensitivity_summary.csv",
+  "primary_key": ["result_id", "sensitivity_specification"],
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "result_id",
+      "type": "string"
+    },
+    {
+      "name": "outcome",
+      "type": "string"
+    },
+    {
+      "name": "outcome_family",
+      "type": "string"
+    },
+    {
+      "name": "metric",
+      "type": "string"
+    },
+    {
+      "name": "model_tier",
+      "type": "string"
+    },
+    {
+      "name": "n",
+      "type": "integer"
+    },
+    {
+      "name": "event_count",
+      "type": "integer"
+    },
+    {
+      "name": "lag_start",
+      "type": "integer"
+    },
+    {
+      "name": "lag_end",
+      "type": "integer"
+    },
+    {
+      "name": "lag_df",
+      "type": "integer"
+    },
+    {
+      "name": "sensitivity_specification",
+      "type": "string"
+    },
+    {
+      "name": "global_test_method",
+      "type": "string"
+    },
+    {
+      "name": "global_statistic",
+      "type": "number"
+    },
+    {
+      "name": "global_df1",
+      "type": "integer"
+    },
+    {
+      "name": "global_df2",
+      "type": "number"
+    },
+    {
+      "name": "global_p",
+      "type": "number"
+    },
+    {
+      "name": "q216",
+      "type": "number"
+    },
+    {
+      "name": "multiplicity_family_q216",
+      "type": "string"
+    },
+    {
+      "name": "cumulative_effect",
+      "type": "number"
+    },
+    {
+      "name": "cumulative_se",
+      "type": "number"
+    },
+    {
+      "name": "peak_lag",
+      "type": "integer"
+    },
+    {
+      "name": "convergence",
+      "type": "boolean"
+    },
+    {
+      "name": "separation",
+      "type": "boolean"
+    },
+    {
+      "name": "status",
+      "type": "string"
+    }
+  ]
+}

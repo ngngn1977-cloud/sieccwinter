@@ -1,0 +1,28 @@
+{
+  "name": "input_validation_report",
+  "file": "input_validation_report.csv",
+  "primary_key": "check_id",
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "check_id",
+      "type": "string"
+    },
+    {
+      "name": "category",
+      "type": "string"
+    },
+    {
+      "name": "status",
+      "type": "string"
+    },
+    {
+      "name": "n_affected",
+      "type": "integer"
+    },
+    {
+      "name": "detail",
+      "type": "string"
+    }
+  ]
+}

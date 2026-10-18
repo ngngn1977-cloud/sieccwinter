@@ -1,0 +1,257 @@
+{
+  "protocol_id": "cold_burden_validation_protocol",
+  "version": "1.0 (Phase 3F, declared before the first manual run)",
+  "status_of_this_document": "DECLARED BEFORE THE MANUAL RUN. Plan for the numerical reproduction and the mathematical verification of the exploratory cold-burden scan (22,302 models) against the frozen V1.4 output. Numerical reproduction (agreement with the frozen legacy output), mathematical verification (independent checks of definitions, scales, inference and multiplicity) and scientific interpretation are kept separate; the last is NOT assessed by this run. Nothing in it is derived from a result of this run, and nothing is forced to match a reference.",
+  "scope": {
+    "this_scan": "V1.4 full-profile cold-burden scan, stage 13_cold_burden_full_scan: 14 fitted thresholds x 59 windows x 9 burden/transformation variants x 3 outcomes = 22,302 models, tier M2_L",
+    "reconciliation_with_the_earlier_archive": "REDACTED_PUBLIC_BUILD",
+    "outside_this_protocol": "bootstraps, resampling, nested cross-validation and candidate-selection analyses of the earlier archive, figures, manuscript and SI, the final L01-L56 and archived L01-L59 DLMs"
+  },
+  "parameters": {
+    "thermal_metrics": [
+      "UTCI",
+      "MRT",
+      "ERA5_air_temperature",
+      "IMS_temperature"
+    ],
+    "percentiles": {
+      "P10": 0.1,
+      "P05": 0.05,
+      "P025": 0.025
+    },
+    "quantile_type": 7,
+    "utci_standard_thresholds": [
+      9,
+      0,
+      -13
+    ],
+    "min_participant_days_below": 20,
+    "min_support_participants": 8,
+    "lag_end": 59,
+    "tier": "M2_L",
+    "glm_epsilon": 1e-08,
+    "glm_maxit": 25,
+    "independent_refit_every": 40,
+    "expected_grid": {
+      "windows": 59,
+      "thresholds": 14,
+      "variants": 9,
+      "outcomes": 3
+    },
+    "windows_subset": null,
+    "si_row": {
+      "outcome": "UCLA_Lonliness_SCORE",
+      "metric": "MRT",
+      "threshold_name": "P025",
+      "burden_measure": "mean_cold_intensity",
+      "transformation": "raw",
+      "window_or_lag": 29,
+      "q_global_range": [
+        0.000145,
+        0.000155
+      ],
+      "positive_burden": 8,
+      "leverage_range": [
+        0.915,
+        0.925
+      ],
+      "influential": 6
+    }
+  },
+  "specification_trace": {
+    "sources": "WINTER_SOURCE (V1.4 hotfix) R/110_cold_burden.R (siecc_cold_thresholds, siecc_cold_features_one, siecc_build_cold_feature, siecc_cold_burden_scan), R/030_model_engine.R (siecc_fit_model), config/analysis_config.R, R/170_pipeline.R line 223; frozen run SIECC_FULL_20260801T125700 (models/cold_burden_results.csv, models/cold_thresholds.csv); SI Table S5 row 'Exploratory cold-burden scan' and the 'Other multiplicity families' paragraph. The manuscript contains no cold-burden analysis (only the descriptive UTCI classification of Figure 3 / Table 1).",
+    "exposure_metrics": "the four thermal metrics (domain 'thermal' in the legacy configuration): UTCI, MRT, ERA5_air_temperature, IMS_temperature, from the daily fields UTCI_L01.., MRT_L.., T2M_L.., IMS_IDW_TD_MEAN_L..",
+    "lag_horizon": "L01-L59 (configuration lags 1:59); windows 1..59 days, window w uses lags L01..Lw",
+    "thresholds": {
+      "pooled_percentiles": "for every thermal metric the pooled distribution of all finite participant-day values over L01..L59 (55 participants x 59 lags = 3,245 participant-days), stats::quantile(type = 7) at 0.10 (P10), 0.05 (P05), 0.025 (P025)",
+      "standard_utci": "fixed UTCI thresholds 9, 0, -13 degC (UTCI only)",
+      "cold_day": "a day is cold if the value is finite and strictly below the threshold (equality is not cold); a missing or non-finite value is never cold (it contributes no deficit and ends a run)",
+      "fit_rule": "a threshold is fitted only if at least 20 participant-days lie below it (15 thresholds are defined; UTCI < -13 has 0 and is not fitted; 14 are fitted)"
+    },
+    "burden_measures": {
+      "degree_burden": "sum over the window's cold days of (threshold - value), degC x days; transformations raw, log1p, sqrt",
+      "cold_day_count": "number of cold days (days); raw only",
+      "persistent_cold_days_ge2": "number of days belonging to runs of at least 2 consecutive cold lags (days); raw only",
+      "longest_cold_spell": "length of the longest run of consecutive cold lags (days); 0 if none; raw only",
+      "mean_cold_intensity": "mean deficit over the cold days (degC); 0 if there is no cold day; transformations raw, log1p, sqrt",
+      "positive_burden_support": "participants_with_positive_burden = number of participants with transformed burden > 0; support_eligible = at least 8 (a flag, not an exclusion)"
+    },
+    "outcomes": "UCLA_Lonliness_SCORE and Isolation_cont (gaussian), Int_dummy (binomial)",
+    "model": "one model per specification; tier M2_L (Sex, Age, AssessmentDay_centered, Locality_3group, Econ_STS); exposure = the (transformed) burden on its own scale (exposure_unit cold_burden); coefficient per unit of that scale",
+    "fitting_controls": "gaussian: ordinary least squares, HC3 covariance for the exposure SE, t inference with the residual df; binomial: ordinary maximum-likelihood logistic regression with stats::glm default control (epsilon 1e-8, maxit 25; the legacy call passes no control), model-based SE, Wald z inference, LR test of the exposure; the Firth sensitivity that the legacy fitting function can run is not part of the cold-burden output and is not reproduced",
+    "missing_data_rule": "complete cases on participant code, outcome, exposure and covariates (the burden itself is never missing because missing days are not cold); in the frozen scan n = 55 in every model; supplied rainfall is not used by the cold-burden analysis",
+    "estimability": "a model is NOT_ESTIMABLE when n <= parameters, the design is rank deficient (including an all-zero burden), a non-intercept column is constant, or the exposure has zero variance, or a binary outcome has no variation; 1,725 frozen rows (all rank-deficient: zero participants with positive burden)",
+    "multiplicity": {
+      "q_global": "Benjamini-Hochberg over all finite exposure p values of the scan (20,577 estimable models)",
+      "q_outcome": "BH within outcome (3 families)",
+      "q_curve": "BH over the windows 1..59 within (outcome, metric, threshold, measure, transformation) (378 families)",
+      "model_selection": "none: every fitted specification is reported; no model is dropped or chosen; thresholds with fewer than 20 participant-days are the only specifications not fitted"
+    },
+    "reported_findings_to_check": "SI Table S5: 'Exploratory cold-burden scan: 59 lags within fixed curve / all tests within outcome / complete scan = 59 / 7,434 / 22,302'; SI paragraph 'Other multiplicity families': exactly one globally BH-supported row (UCLA loneliness, MRT, pooled 2.5th-percentile threshold, mean cold intensity, 29-day target, q_global about 0.00015), supported by only eight participants with positive burden, maximum leverage about 0.92, six influential cases. The SI gives no definition of thresholds or burden measures: the legacy code is the only specification found, and no source conflict was found between the code, the frozen output and the SI statements."
+  },
+  "reference_files": [
+    {
+      "name": "cold_burden_results",
+      "file": "cold_burden_results.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 22302,
+      "keys": [
+        "outcome",
+        "metric",
+        "threshold_name",
+        "burden_measure",
+        "transformation",
+        "window_or_lag"
+      ]
+    },
+    {
+      "name": "cold_thresholds",
+      "file": "cold_thresholds.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 15,
+      "keys": [
+        "metric",
+        "threshold_name"
+      ]
+    }
+  ],
+  "tolerance": {
+    "class": "cumulative",
+    "exact": {
+      "abs": 1e-12,
+      "rel": 1e-12
+    },
+    "within_tolerance": {
+      "abs": 1e-07,
+      "rel": 1e-06
+    },
+    "source": "config/sieccwinter_config.json tolerances (exact_*, cumulative_*): the class of the validated cumulative grid, which uses the same fitting engine; unchanged and not chosen from results",
+    "rule": "EXACT / WITHIN_TOLERANCE / DIFFERENT / NONFINITE as in the earlier validations; unmatched, duplicate, blank and unclassified cells fail; a value infinite on both sides is compared as an infinite-equal pair (condition_number and maximum_vif of non-estimable models), infinite on one side only fails"
+  },
+  "comparisons": [
+    {
+      "id": "RESULTS_22302",
+      "reference": "cold_burden_results",
+      "fields": [
+        "n",
+        "event_count",
+        "non_event_count",
+        "parameter_count",
+        "residual_df",
+        "rank",
+        "condition_number",
+        "maximum_vif",
+        "coefficient",
+        "model_based_se",
+        "robust_hc3_se",
+        "statistic",
+        "robust_statistic",
+        "ci_lower",
+        "ci_upper",
+        "nominal_p",
+        "standardised_effect",
+        "iqr_effect",
+        "odds_ratio_raw",
+        "odds_ratio_sd",
+        "odds_ratio_iqr",
+        "lr_statistic",
+        "lr_df",
+        "lr_p",
+        "model_f",
+        "model_f_p",
+        "r_squared",
+        "adjusted_r_squared",
+        "partial_r_squared_weather",
+        "nagelkerke_r_squared",
+        "aic",
+        "aicc",
+        "residual_rmse",
+        "brier_score",
+        "log_loss",
+        "auc",
+        "calibration_intercept",
+        "calibration_slope",
+        "maximum_coefficient_magnitude",
+        "maximum_cooks_distance",
+        "maximum_leverage",
+        "maximum_absolute_dfbeta",
+        "influential_case_count",
+        "exposure_sd",
+        "exposure_iqr",
+        "exposure_p10",
+        "exposure_p25",
+        "exposure_p75",
+        "exposure_p90",
+        "threshold_value",
+        "participants_with_positive_burden",
+        "q_global",
+        "q_outcome",
+        "q_curve"
+      ],
+      "expected_records": 22302,
+      "expected_compared_cells": 892943,
+      "expected_infinite_equal_pairs": 3450,
+      "note": "cells = finite reference values of the 54 fields; 3,450 = condition_number and maximum_vif infinite in the 1,725 non-estimable models"
+    },
+    {
+      "id": "THRESHOLDS_15",
+      "reference": "cold_thresholds",
+      "fields": [
+        "quantile",
+        "threshold",
+        "participant_days_below",
+        "participant_days_total"
+      ],
+      "expected_records": 15,
+      "expected_compared_cells": 57
+    }
+  ],
+  "categorical_comparisons": {
+    "fields": [
+      "status",
+      "convergence",
+      "separation_status",
+      "support_eligible",
+      "outcome_family",
+      "model_tier",
+      "exposure_unit",
+      "primary_role",
+      "threshold_type"
+    ],
+    "rule": "identical in every model (a missing value and an empty string are equal); not_estimable_reason is compared by its class (rank deficient / other), not by its text"
+  },
+  "mathematical_verification": {
+    "separate_from_numerical_reproduction": true,
+    "features": "for every fitted threshold, window, measure and participant the optimised burden features are recomputed with an independent per-participant route (run-length encoding of the first w lags, the legacy semantics written out separately) and must agree to 1e-12 (absolute); counts exactly",
+    "thresholds": "the percentile thresholds are recomputed with an independent type-7 quantile implementation and the participant-day counts below each threshold recounted; they must equal the package values (1e-12) and the frozen thresholds",
+    "scales_and_inference": "from the package results AND from the frozen reference, independently: standardised_effect = coefficient x SD(exposure) / SD(outcome) (gaussian) or coefficient x SD(exposure) (binomial); iqr_effect = coefficient x IQR(exposure); odds ratios = exp(coefficient x scale); gaussian p = 2 pt(|coefficient / HC3 SE|, residual_df) and CI = coefficient +/- qt(0.975, residual_df) x HC3 SE; binomial p = 2 pnorm(|coefficient / model SE|), CI = coefficient +/- 1.96 x SE; lr_p = chi-square tail of lr_statistic on lr_df; tolerance 1e-9 relative",
+    "multiplicity": "q_global, q_outcome and q_curve recomputed with stats::p.adjust(method = 'BH') from the frozen p values and from the package p values over the declared families; family counts and sizes must equal the declaration (1; 3; 378)",
+    "independent_refit": "a deterministic sample (every 40th model in the frozen row order, the SI-reported model, and the first non-estimable model) is refitted with a separate formula-based route (stats::lm / stats::glm, own HC3 from hat values) and compared with the package row at the cumulative tolerance class",
+    "si_statements": "statement-level check of the SI cold-burden row: exactly one model with q_global <= 0.05; it is the UCLA / MRT / P025 / mean_cold_intensity / window 29 / raw model; q_global within 0.000145-0.000155; 8 participants with positive burden; maximum leverage within 0.915-0.925; 6 influential cases. This does not change the manuscript concordance status (REVIEW)."
+  },
+  "scientific_interpretation": "NOT assessed. The run reports descriptive support, leverage, influence and separation flags only. Numerical agreement does not show that sparse, influence-sensitive or separated fits give reliable inference, and no model is promoted.",
+  "statuses": {
+    "EXECUTION_STATUS": "PASS if the run completed",
+    "INPUT_PROVENANCE_STATUS": "PASS only if both reference files exist with the declared SHA-256 and bytes, record counts, unique complete keys (14 fitted thresholds x 59 windows x 9 variants x 3 outcomes) and required columns; otherwise FAIL and nothing is compared",
+    "THRESHOLDS_STATUS": "PASS only if THRESHOLDS_15 meets the rules and the declared cell count",
+    "NUMERICAL_REPRODUCTION_STATUS": "PASS only if RESULTS_22302 has no DIFFERENT, NONFINITE, UNMATCHED, duplicate or unclassified cell, the compared-cell count and the infinite-equal pair count equal the declaration, and the categorical comparisons are identical",
+    "FEATURE_VERIFICATION_STATUS": "PASS only if the independent burden features agree in every window",
+    "SCALE_AND_INFERENCE_STATUS": "PASS only if the identities hold for package and reference",
+    "MULTIPLICITY_STATUS": "PASS only if the families and q values meet the rules",
+    "INDEPENDENT_REFIT_STATUS": "PASS only if every sampled model agrees",
+    "SI_STATEMENT_STATUS": "PASS only if every statement-level condition holds (does not change MANUSCRIPT_CONCORDANCE = REVIEW)",
+    "COVERAGE_STATUS": "PASS only if every required comparison is present, classified and complete; a required comparison that could not be made is FAIL",
+    "SOURCE_INTEGRITY_STATUS": "PASS only if the source fingerprint is unchanged during the run",
+    "carried_unchanged": "FINAL_NINE_L56_NUMERICAL_VALIDATION = ACCEPTED_UNDER_V2_1; ARCHIVED_DLM_DETERMINISTIC = ACCEPTED (Phase 3E1); MANUSCRIPT_CONCORDANCE = REVIEW; FIGURE_PROVENANCE = NOT_TESTED; DLNM_EQUALITY = NOT_TESTED; SCIENTIFIC_INTERPRETATION = NOT_ASSESSED"
+  },
+  "exit_codes": {
+    "0": "all statuses PASS and nothing open (not expected: scientific interpretation stays open)",
+    "3": "all statuses PASS with scientific interpretation not assessed (expected best case)",
+    "4": "a status FAILED or evidence is missing",
+    "1": "execution failure",
+    "2": "invalid arguments or R missing"
+  },
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

@@ -1,0 +1,297 @@
+{
+  "protocol_id": "archived_dlm_validation_protocol",
+  "version": "1.0 (Phase 3E, declared before the first manual run)",
+  "status_of_this_document": "DECLARED BEFORE THE MANUAL RUN. Comparison plan for the 168 archived L01-L59 DLM specifications (seven tiers) and the 216 archived lag-form sensitivity specifications (q24, q9, q216) against the frozen V1.4 outputs. It is separate from the V1/V2/V2.1 validation of the nine final L01-L56 models and does NOT extend the V2.1 acceptance to these analyses. Nothing in it is derived from a result of this run.",
+  "scope": {
+    "archived_grid": "3 outcomes x 8 metrics x 7 tiers (M0, M1, M2_L, M2_E, M2_EL, M3, M4_CC) = 168 models, lags L01-L59, lag df 3 (the frozen reference has no other lag end or df for this grid)",
+    "lag_form_sensitivity": "24 outcome-metric pairs x lag ends {35, 45, 59} x lag df {2, 3, 4} = 216 models, tier M2_L",
+    "kept_separate_from": "the nine final L01-L56 M2-L models (accepted under V2.1, PHASE3D8); no archived result is ever combined with, substituted for or used to decide on a final model",
+    "outside_this_protocol": "the cold-burden batch, bootstraps, Firth, ordinal, transformations, nonlinearity, anomaly, alternative history, figures, manuscript and SI"
+  },
+  "specification_trace": {
+    "source_of_specification": "WINTER_SOURCE (V1.4 hotfix) R/080_dlm.R (siecc_fit_dlm, siecc_dlm_grid, siecc_dlm_sensitivity_grid), config/analysis_config.R, R/170_pipeline.R; the package branch is R/archived.R (siw_archived_dlm_grid, siw_archived_dlm_sensitivity) calling siw_fit_dlm",
+    "frozen_run": "REDACTED_PUBLIC_BUILD",
+    "outcomes": "UCLA_Lonliness_SCORE (gaussian), Isolation_cont (gaussian), Int_dummy (binomial)",
+    "metrics": "UTCI, MRT, ERA5_air_temperature, ERA5_relative_humidity, IMS_temperature, IMS_relative_humidity, IMS_rainfall_total, IMS_rainy_day_count_ge_1_mm (daily prefixes UTCI, MRT, T2M, RH, IMS_IDW_TD_MEAN, IMS_IDW_RH_MEAN, IMS_IDW_RAIN_TOTAL, IMS_IDW_RAIN_DAYS1)",
+    "tiers_and_covariates": "M0 none; M1 Sex, Age, AssessmentDay_centered; M2_L M1 + Locality_3group + Econ_STS; M2_E M1 + Ethnicity + Econ_STS; M2_EL M1 + Locality_3group + Ethnicity + Econ_STS; M3 M2_L + PSQI, Subjective_Health, Memory, Memory_Changed, Subjective_Wellbeing; M4_CC M2_L + PSQI, Memory_assess, chronic_domain_count, Outdoor_Mobility, PedestLength_km (identical in config/analysis_config.R and in config/sieccwinter_config.json; both read by the package, nothing re-keyed)",
+    "model": "linear exposure, natural cubic spline over lags (df 3 for the grid; 2, 3, 4 for the sensitivity), all lags L01..L<lag_end> required (complete history), Gaussian: lm with HC3 covariance, nested F test of the cross-basis block; binomial: glm.fit logit, model-based covariance, likelihood-ratio test of the cross-basis block",
+    "missing_data_rule": "complete cases on outcome, covariates and every lag of the metric (no imputation). Supplied rainfall missingness is preserved: the package never applies the rainfall zero-reconstruction sensitivity (siw_rainfall_zero_reconstruction_sensitivity) in this run; the run records the supplied rainfall cells that are missing and verifies that the data passed to the fits are unchanged. The frozen reference n (55 for all metrics except 54 for IMS_rainfall_total) is compared, not assumed.",
+    "binary_fit_control": {
+      "glm_epsilon": 1e-10,
+      "glm_maxit": 200,
+      "source": "REDACTED_PUBLIC_BUILD",
+      "package_default": "config$dlm$final$glm_epsilon = 1e-12 (the accepted setting of the nine final models)",
+      "how_applied": "the archived validation runs the unchanged package function siw_fit_dlm on a COPY of the configuration whose glm epsilon is the archived value above, so the specification of the frozen analysis is reproduced and the settings of the final models are not touched; the epsilon used is written to the run metadata"
+    },
+    "multiplicity": {
+      "q24": "Benjamini-Hochberg over the 24 global tests of the M2_L models of the 168-model grid (3 outcomes x 8 metrics); NA for the other six tiers (source: siecc_dlm_grid, master$q24[idx24])",
+      "q9": "Benjamini-Hochberg over the 9 M2_L models with the representative metrics UTCI, IMS_relative_humidity, IMS_rainy_day_count_ge_1_mm (primary_representative); NA elsewhere",
+      "q216": "Benjamini-Hochberg over all 216 global tests of the lag-form sensitivity (24 pairs x 9 specifications, including the 24 specifications L59_DF3 that repeat the M2_L grid models) (source: siecc_dlm_sensitivity_grid, summary$q216 <- siecc_bh(summary$global_p))",
+      "validation": "each family is validated three ways: membership and size equal the declaration; q recomputed from the reference p values with stats::p.adjust(method = 'BH') equals the reference q; q recomputed the same way from the package p values equals the package q, and the package q equals the reference q within the tolerance class"
+    },
+    "simulation_settings_not_used": "frozen grid: simultaneous critical values from 10,000 draws (full profile maxT_replicates) with seed rule seed + 100 x metric_index + outcome_index; sensitivity: 0 draws (no bands). The package configuration for the archived branch also declares 10,000 draws. These are NOT used in this run (see not_deterministic)."
+  },
+  "reference_files": [
+    {
+      "name": "archived_grid_summary",
+      "file": "fixed_DLM_summary.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 168,
+      "keys": [
+        "outcome",
+        "metric",
+        "model_tier"
+      ],
+      "note": "the full frozen file (31 columns). The Phase 2C.2 bundle copy (52,492 bytes, simulation columns dropped) is NOT used."
+    },
+    {
+      "name": "sensitivity_summary",
+      "file": "DLM_lag_length_df_sensitivity_summary.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 216,
+      "keys": [
+        "outcome",
+        "metric",
+        "sensitivity_specification"
+      ],
+      "note": "no copy of this file existed in any reference bundle before Phase 3E; used in place, read only, hash verified"
+    },
+    {
+      "name": "archived_grid_lag_curves",
+      "file": "fixed_DLM_lag_curves.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 9912,
+      "keys": [
+        "outcome",
+        "metric",
+        "model_tier",
+        "lag"
+      ],
+      "note": "168 models x 59 lags"
+    },
+    {
+      "name": "archived_grid_cumulative_curves",
+      "file": "fixed_DLM_cumulative_curves.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 9912,
+      "keys": [
+        "outcome",
+        "metric",
+        "model_tier",
+        "lag"
+      ],
+      "note": "168 models x 59 lags"
+    },
+    {
+      "name": "sensitivity_lag_curves",
+      "file": "DLM_lag_length_df_sensitivity_curves.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 10008,
+      "keys": [
+        "outcome",
+        "metric",
+        "sensitivity_specification",
+        "lag"
+      ],
+      "note": "24 pairs x 3 dfs x (35 + 45 + 59) lags; the frozen run stores no cumulative curve for the sensitivity"
+    }
+  ],
+  "tolerance": {
+    "class": "dlm",
+    "exact": {
+      "abs": 1e-12,
+      "rel": 1e-12
+    },
+    "within_tolerance": {
+      "abs": 2e-06,
+      "rel": 0.0001
+    },
+    "source": "config/sieccwinter_config.json tolerances (exact_abs, exact_rel, dlm_abs, dlm_rel), unchanged since Phase 2",
+    "rule": "EXACT if |new - ref| <= exact abs + exact rel x |ref|; WITHIN_TOLERANCE if |new - ref| <= dlm abs + dlm rel x |ref|; otherwise DIFFERENT. A value missing on one side only, or non-finite, is NONFINITE and fails. No tolerance is chosen or widened after seeing a result."
+  },
+  "comparisons": [
+    {
+      "id": "SUMMARY_168",
+      "reference": "archived_grid_summary",
+      "fields": [
+        "n",
+        "event_count",
+        "lag_start",
+        "lag_end",
+        "lag_df",
+        "global_statistic",
+        "global_df",
+        "global_p",
+        "cumulative_effect",
+        "cumulative_se",
+        "cumulative_ci_lower",
+        "cumulative_ci_upper",
+        "peak_effect",
+        "rank",
+        "parameter_count",
+        "residual_df",
+        "q24",
+        "q9"
+      ],
+      "expected_records": 168,
+      "expected_compared_cells": 2609
+    },
+    {
+      "id": "SUMMARY_216",
+      "reference": "sensitivity_summary",
+      "fields": [
+        "n",
+        "event_count",
+        "lag_start",
+        "lag_end",
+        "lag_df",
+        "global_statistic",
+        "global_df",
+        "global_p",
+        "cumulative_effect",
+        "cumulative_se",
+        "cumulative_ci_lower",
+        "cumulative_ci_upper",
+        "peak_effect",
+        "rank",
+        "parameter_count",
+        "residual_df",
+        "q216"
+      ],
+      "expected_records": 216,
+      "expected_compared_cells": 3528
+    },
+    {
+      "id": "LAG_CURVES_168",
+      "reference": "archived_grid_lag_curves",
+      "fields": [
+        "estimate",
+        "standard_error",
+        "lower_95",
+        "upper_95"
+      ],
+      "expected_records": 9912,
+      "expected_compared_cells": 39648
+    },
+    {
+      "id": "CUMULATIVE_CURVES_168",
+      "reference": "archived_grid_cumulative_curves",
+      "fields": [
+        "cumulative_effect",
+        "cumulative_se",
+        "cumulative_lower_95",
+        "cumulative_upper_95"
+      ],
+      "expected_records": 9912,
+      "expected_compared_cells": 39648
+    },
+    {
+      "id": "LAG_CURVES_216",
+      "reference": "sensitivity_lag_curves",
+      "fields": [
+        "estimate",
+        "standard_error",
+        "lower_95",
+        "upper_95"
+      ],
+      "expected_records": 10008,
+      "expected_compared_cells": 40032
+    }
+  ],
+  "categorical_and_flag_comparisons": {
+    "fields": [
+      "status",
+      "convergence",
+      "separation"
+    ],
+    "rule": "must be identical to the reference in every model of both summaries; a difference is DIFFERENT and fails (convergence and separation flags are reported, never overridden)"
+  },
+  "peak_lag": {
+    "rule": "peak_lag (argmax of |lag-specific estimate|, an integer) is compared exactly. A different integer is accepted only as PEAK_LAG_TIE_WITHIN_TOLERANCE when the frozen lag curve gives |estimate| at the package peak lag equal to |estimate| at the reference peak lag within the tolerance class; otherwise DIFFERENT and fails.",
+    "scope": "both summaries"
+  },
+  "strata": {
+    "separation_flagged_binary": "reference separation == TRUE (23 of the 56 binary grid models and 30 of the 72 binary sensitivity models, by the frozen file). Compared with the same tolerance class. They are NOT excused: a difference beyond tolerance fails. Results are additionally reported by stratum (separation flagged / other; Gaussian / binary) so that the cause of any failure can be located. Agreement in this stratum says nothing about the inferential reliability of separated fits.",
+    "by_tier_family_and_lag_form": "reported for every comparison"
+  },
+  "internal_consistency_checks": [
+    "reference: global_df equals lag_df in every row; global_p equals the F or chi-square tail probability of global_statistic (F with residual_df for Gaussian, chi-square for binary) within 1e-9 relative; rank equals parameter_count; q recomputed with p.adjust BH",
+    "reference and package: the 24 sensitivity specifications L59_DF3 repeat the 24 M2_L grid models and must agree with them to the exact class",
+    "package: the summaries of the curve-producing fits and of the unchanged archived functions siw_archived_dlm_grid and siw_archived_dlm_sensitivity must be identical (the implemented branches are reused, not re-implemented)"
+  ],
+  "lag_basis": {
+    "combinations": "(L, df) in {(59, 3)} plus {35, 45, 59} x {2, 3, 4}: nine distinct bases",
+    "checks": "package basis (splines::ns(1:L, df, intercept = TRUE)) against the independent Cox-de Boor construction (siw_dlm_verify_basis): B-spline values vs splines::splineDesign, package basis inside the independent B-spline space, natural boundary constraint, projector equality, constant function in the span, number of columns equal to df and full column rank; equality with dlnm::onebasis is NOT_TESTED where dlnm is not installed (it is not installed in the validation environment) and is never PASS",
+    "dlnm_note": "the frozen analysis built the cross-basis with dlnm::crossbasis; the equality of the cross-basis and the package basis for L = 35, 45, 59 and df = 2, 3, 4 is therefore tested only through the comparison of the global tests and cumulative quantities with the frozen output, which depend on the spanned space"
+  },
+  "global_tests": "global_statistic, global_df and global_p are compared in SUMMARY_168 and SUMMARY_216 for every documented basis dimension; the status GLOBAL_TESTS_STATUS is derived from those cells only",
+  "not_deterministic_or_not_validated_here": [
+    {
+      "item": "simultaneous_critical (168 frozen values)",
+      "reason": "Monte Carlo quantity of 10,000 multivariate-normal draws; depends on the seed, the draw count, the eigenvector orientation of MASS::mvrnorm and the covariance to machine precision (see V1/V2/V2.1). Not compared, not run (draws = 0 in this run).",
+      "needed": "a separate protocol in the style of V2.1 (orientation-aware reproduction and Monte Carlo agreement) for the archived grid"
+    },
+    {
+      "item": "any_simultaneous_band_excludes_null (168)",
+      "reason": "a function of the simultaneous critical value",
+      "needed": "same separate protocol"
+    },
+    {
+      "item": "simultaneous_lower_95 / simultaneous_upper_95 in fixed_DLM_lag_curves.csv (9,912 rows)",
+      "reason": "a function of the simultaneous critical value; all missing in the sensitivity curves (0 draws)",
+      "needed": "same separate protocol"
+    },
+    {
+      "item": "evidence_status (SUPPORTED_PRIMARY_DLM / UNSUPPORTED_PRIMARY_DLM / SENSITIVITY_ONLY)",
+      "reason": "derived from q9 and the simultaneous band exclusion",
+      "needed": "same separate protocol"
+    },
+    {
+      "item": "condition_number",
+      "reason": "diagnostic computed by the legacy engine (kappa of the design); not produced by the package",
+      "needed": "none for the numerical claims; reported as NOT_TESTED"
+    },
+    {
+      "item": "exponentiated_estimate (lag curves)",
+      "reason": "a monotone transform of the compared estimate; not produced by the package curve table",
+      "needed": "none; reported as NOT_TESTED"
+    },
+    {
+      "item": "independent-route verification of the archived fits",
+      "reason": "the independent route of Phase 3D was built and accepted for the nine L01-L56 models only; this run compares the package with the frozen legacy output and does not establish that either is correct where they agree",
+      "needed": "optional separate extension"
+    },
+    {
+      "item": "archived figures, Table 3 and manuscript statements that quote archived values",
+      "reason": "outside this protocol",
+      "needed": "manuscript concordance remains REVIEW; figure provenance remains NOT_TESTED"
+    }
+  ],
+  "statuses": {
+    "EXECUTION_STATUS": "PASS if the run completed",
+    "INPUT_PROVENANCE_STATUS": "PASS only if: all five reference files exist, their SHA-256 equal the values above, record counts equal the expected counts, keys are unique and complete (the full 168 and 216 grids), required columns exist, the data file passes the input validation for 59 lags; otherwise FAIL and no comparison is judged",
+    "ARCHIVED_168_STATUS": "PASS only if SUMMARY_168 has no DIFFERENT, NONFINITE, UNMATCHED, duplicate or unclassified cell, the compared-cell count equals the declaration, the flag comparisons are identical and the peak-lag rule holds",
+    "LAG_FORM_216_STATUS": "same for SUMMARY_216",
+    "GLOBAL_TESTS_STATUS": "PASS only if no global_statistic, global_df or global_p cell of either summary is DIFFERENT or NONFINITE and none is missing",
+    "MULTIPLICITY_STATUS": "PASS only if q24, q9 and q216 meet the validation rules above",
+    "CURVES_STATUS": "PASS only if LAG_CURVES_168, CUMULATIVE_CURVES_168 and LAG_CURVES_216 each meet the rules above",
+    "LAG_BASIS_STATUS": "PASS only if every tested basis check of the nine bases passes (dlnm equality is reported NOT_TESTED, never PASS)",
+    "COVERAGE_STATUS": "PASS only if every required comparison group is present, classified and has no unclassified cell; a required comparison that could not be made is FAIL, never PASS",
+    "SOURCE_INTEGRITY_STATUS": "PASS only if the source fingerprint is unchanged during the run",
+    "carried_unchanged": "FINAL_NINE_L56_NUMERICAL_VALIDATION = ACCEPTED_UNDER_V2_1 (not recomputed, not extended); MANUSCRIPT_CONCORDANCE = REVIEW; FIGURE_PROVENANCE = NOT_TESTED; DLNM_EQUALITY = NOT_TESTED",
+    "separate_validation_items": "SIMULTANEOUS_CRITICAL_VALUES, SIMULTANEOUS_BANDS and the derived evidence_status of the archived grid = NOT_VALIDATED_SEPARATE_PROTOCOL_REQUIRED"
+  },
+  "exit_codes": {
+    "0": "all statuses PASS and nothing open (not expected: the separate-validation items remain open)",
+    "3": "all statuses PASS, separate-validation items open (expected)",
+    "4": "a status FAILED or evidence is missing",
+    "1": "execution failure",
+    "2": "invalid arguments or R missing"
+  },
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

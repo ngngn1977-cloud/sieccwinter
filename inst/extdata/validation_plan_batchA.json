@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "batch": "A",
+  "description": "Batch A validation plan, separate from the accepted core plan (validation_plan.json). Every reference listed here is required: an absent, undeclared or incomplete reference FAILS. References are column selections from the authoritative frozen V1.4 outputs; no new-package output is used as a reference. Tolerances are the existing named set 'cumulative' (exact 1e-12; within 1e-7 + 1e-6 relative).",
+  "expected_assessment_day_groups_study_data": 33,
+  "references": [
+    {
+      "name": "batchA_diagnostics", "required": true, "scope": "Batch A: 16 influence/design diagnostic columns of the 1,680 cumulative specifications",
+      "files": ["batchA_cumulative_diagnostics_reference.csv"], "keys": ["outcome", "metric", "window_or_lag", "model_tier"], "result": "cumulative_diagnostics", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchA_cumulative_diagnostics_reference.csv": 1680 },
+      "required_columns": ["condition_number", "maximum_vif", "calibration_intercept", "calibration_slope", "maximum_coefficient_magnitude", "maximum_cooks_distance", "maximum_leverage", "maximum_absolute_dfbeta", "influential_case_count", "exposure_p10", "exposure_p25", "exposure_p75", "exposure_p90", "marginal_probability_difference_per_sd", "probability_at_mean_minus_half_sd", "probability_at_mean_plus_half_sd"]
+    },
+    {
+      "name": "batchA_bivariate", "required": true, "scope": "Batch A: 240 cumulative bivariate tests (Pearson / point-biserial, Spearman, descriptive q families)",
+      "files": ["batchA_bivariate_reference.csv"], "keys": ["outcome", "metric", "window_or_lag"], "result": "bivariate_cumulative", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchA_bivariate_reference.csv": 240 },
+      "required_columns": ["n", "pearson_or_point_biserial_r", "pearson_p", "spearman_rho", "spearman_p", "model_p", "q_pearson_global", "q_pearson_outcome", "q_pearson_outcome_metric", "q_spearman_global", "q_spearman_outcome", "q_spearman_outcome_metric", "q_model_global", "q_model_outcome", "q_model_outcome_metric"]
+    },
+    {
+      "name": "batchA_table1", "required": true, "scope": "Batch A: cohort table (17 rows) of the original descriptive analysis",
+      "files": ["batchA_descriptive_table1_reference.csv"], "keys": ["characteristic"], "result": "descriptive_table1", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchA_descriptive_table1_reference.csv": 17 },
+      "required_columns": ["n_or_count", "percent", "mean", "sd", "median", "iqr", "minimum", "maximum"]
+    },
+    {
+      "name": "batchA_group_summaries", "required": true, "scope": "Batch A: outcome summaries by age group, sex, ethnicity and locality (30 rows)",
+      "files": ["batchA_group_summaries_reference.csv"], "keys": ["outcome", "factor", "level"], "result": "descriptive_group_summaries", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchA_group_summaries_reference.csv": 30 },
+      "required_columns": ["n", "mean_or_proportion", "se", "ci_lower", "ci_upper"]
+    },
+    {
+      "name": "batchA_group_tests", "required": true, "scope": "Batch A: group tests with BH within outcome (12 rows)",
+      "files": ["batchA_group_tests_reference.csv"], "keys": ["outcome", "factor"], "result": "descriptive_group_tests", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchA_group_tests_reference.csv": 12 },
+      "required_columns": ["statistic", "p", "q_within_outcome"]
+    }
+  ]
+}

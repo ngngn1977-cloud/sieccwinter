@@ -1,0 +1,49 @@
+# Confidential data and private validation material must never be committed
+private_validation/
+../private_validation/
+*.sav
+*.SAV
+*.zsav
+*.por
+*.xlsx
+*.xls
+*.rds
+*.RData
+*.rda
+# credentials
+.Renviron
+.Rprofile
+*credential*
+*secret*
+*token*
+*.pem
+*.key
+# run outputs and caches
+output/
+outputs/
+checkpoints/
+demo_output/
+*.log
+.Rhistory
+.Rproj.user/
+# explicit allow-list for the synthetic demo data only
+!inst/extdata/synthetic_siecc_winter.csv
+runs/
+# private conversion outputs (must never be committed)
+private_out*/
+siecc_winter_canonical.csv
+canonical_data_dictionary.json
+CONVERSION_*.csv
+CONVERSION_SUMMARY.md
+*.partial
+# filled paths file of the full run (private paths) and full-run folders
+manual_run_paths.json
+fullrun_*/
+
+# private local configuration and declarations (restored locally by the private validation kit; templates are public)
+config/private_local.json
+config/project_inputs_declaration_v1.json
+inst/extdata/project_inputs_declaration_v1.json
+tests/testthat/private_constants.json
+DEVELOPMENT_LOG_*.md
+private_kit/

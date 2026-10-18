@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "batch": "C",
+  "description": "Batch C validation plan, separate from the core, Batch A and Batch B plans. Every reference marked required is required: an absent, undeclared or incomplete reference FAILS; unmatched, duplicated or blank keys, missing required columns, record-count mismatches, non-finite disagreements and unclassified comparisons FAIL. The reference is a column selection of the authoritative frozen V1.4 aggregate output primary_resampling_summary.csv (rows with target_type = primary_cumulative); no output of the new package is a reference. Tolerances are the existing named set 'cumulative' (exact 1e-12; within 1e-7 abs + 1e-6 rel); none is changed or added. Integer counts (replicates_successful) are compared under the same rule, i.e. they must agree exactly.",
+  "references": [
+    {
+      "name": "batchC_primary_cumulative_bootstrap", "required": true,
+      "scope": "Batch C: 180 participant and assessment-date-cluster bootstrap summaries of the 90 primary M2-L cumulative models (3 outcomes x UTCI, IMS relative humidity, IMS rainy-day count x 10 windows), 2,000 resamples requested each",
+      "files": ["batchC_primary_cumulative_bootstrap_reference.csv"], "keys": ["outcome", "metric", "window_or_lag", "resampling_type"], "result": "bootstrap_summary", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchC_primary_cumulative_bootstrap_reference.csv": 180 },
+      "required_columns": ["replicates_requested", "replicates_successful", "estimate_median", "ci_lower", "ci_upper", "positive_fraction", "negative_fraction"]
+    },
+    {
+      "name": "batchC_dlm_cumulative_effect_bootstrap_L59", "required": false,
+      "scope": "OUT OF SCOPE of Batch C: the 18 DLM cumulative-effect bootstrap rows of the 198-row frozen file (window_or_lag = 59, archived L01-L59 horizon; participant 2000 and assessment-date 1000 resamples) and the final L01-L56 simultaneous bands",
+      "files": ["batchC_dlm_bootstrap_L59_reference.csv"], "keys": ["outcome", "metric", "resampling_type"], "result": "bootstrap_dlm", "tolerance": "cumulative",
+      "expected_records_by_file": { "batchC_dlm_bootstrap_L59_reference.csv": 18 }, "required_columns": []
+    }
+  ]
+}

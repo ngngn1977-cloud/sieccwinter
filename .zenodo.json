@@ -1,0 +1,16 @@
+{
+  "title": "sieccwinter: Reproducible Winter Weather and Social-Outcome Analysis for the SIECC Study",
+  "description": "R package implementing the SIECC Winter analytical workflow: cumulative-window regressions, L01-L56 distributed-lag models, Benjamini-Hochberg families, input validation and comparison with frozen aggregate reference outputs. It contains no study data; a fully synthetic data set is provided for workflow demonstration only.",
+  "upload_type": "software",
+  "version": "1.0.0",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Gabinet, Nahum M.",
+      "affiliation": "Louis and Gabi Weisfeld School of Social Work, Bar-Ilan University, Ramat Gan, Israel; School of Environmental Sciences, Faculty of Social Sciences, University of Haifa, Haifa, Israel",
+      "orcid": "0000-0001-5861-1507"
+    }
+  ],
+  "keywords": ["weather", "winter", "social isolation", "loneliness", "distributed lag models", "reproducibility"],
+  "access_right": "open"
+}

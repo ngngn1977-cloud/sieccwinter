@@ -1,0 +1,32 @@
+{
+  "name": "cumulative_design_audit",
+  "file": "cumulative_design_audit.csv",
+  "primary_key": "model_tier",
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "model_tier",
+      "type": "string"
+    },
+    {
+      "name": "covariates",
+      "type": "string"
+    },
+    {
+      "name": "design_columns",
+      "type": "string"
+    },
+    {
+      "name": "n_columns_including_exposure",
+      "type": "integer"
+    },
+    {
+      "name": "factor_reference_levels",
+      "type": "string"
+    },
+    {
+      "name": "n_rows_complete_covariates",
+      "type": "integer"
+    }
+  ]
+}

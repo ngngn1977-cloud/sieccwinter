@@ -1,0 +1,40 @@
+{
+  "name": "complete_case_accounting",
+  "file": "complete_case_accounting.csv",
+  "primary_key": "result_id",
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "result_id",
+      "type": "string"
+    },
+    {
+      "name": "n_input",
+      "type": "integer"
+    },
+    {
+      "name": "n_complete",
+      "type": "integer"
+    },
+    {
+      "name": "n_excluded",
+      "type": "integer"
+    },
+    {
+      "name": "excluded_missing_outcome",
+      "type": "integer"
+    },
+    {
+      "name": "excluded_missing_exposure",
+      "type": "integer"
+    },
+    {
+      "name": "excluded_missing_covariate",
+      "type": "integer"
+    },
+    {
+      "name": "covariates_with_missing",
+      "type": "string"
+    }
+  ]
+}

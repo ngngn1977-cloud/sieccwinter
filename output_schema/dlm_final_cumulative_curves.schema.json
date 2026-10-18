@@ -1,0 +1,32 @@
+{
+  "name": "dlm_final_cumulative_curves",
+  "file": "dlm_final_cumulative_curves.csv",
+  "primary_key": ["result_id", "lag"],
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "result_id",
+      "type": "string"
+    },
+    {
+      "name": "lag",
+      "type": "integer"
+    },
+    {
+      "name": "cumulative_effect",
+      "type": "number"
+    },
+    {
+      "name": "cumulative_se",
+      "type": "number"
+    },
+    {
+      "name": "cumulative_lower_95",
+      "type": "number"
+    },
+    {
+      "name": "cumulative_upper_95",
+      "type": "number"
+    }
+  ]
+}

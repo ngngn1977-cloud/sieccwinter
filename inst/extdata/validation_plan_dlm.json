@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "batch": "3D",
+  "description": "Phase 3D validation plan for the nine final L01-L56 DLM outputs, separate from the core and Batch A/B/C plans. All three references are the AUDITED_L56_RECONSTRUCTION (Phase 1 audit: legacy siecc_fit_dlm at max_lag 56 on the audited data, 10,000 MVN draws, cross-checked by an independent re-derivation); no original deposited L56 output exists. Every reference marked required is required: an absent, undeclared or incomplete reference FAILS; unmatched, duplicated or blank keys, missing required columns, record-count mismatches and non-finite disagreements FAIL. Tolerance classes: 'dlm' (existing named set), 'exact' (existing), 'seeded' (declared in config/dlm_validation_protocol.json: 1e-9 abs + 1e-9 rel; exact seeded reproduction). No existing tolerance is changed.",
+  "references": [
+    {
+      "name": "dlmL56_audited_estimates", "required": true, "evidence_class": "AUDITED_L56_RECONSTRUCTION",
+      "scope": "nine final M2-L DLMs: n, global statistic and p, q9, cumulative effect/SE/CI at L56, peak effect",
+      "files": ["dlmL56_audited_estimates.csv"], "keys": ["outcome", "metric"], "result": "dlm_estimates", "tolerance": "dlm",
+      "expected_records_by_file": { "dlmL56_audited_estimates.csv": 9 },
+      "required_columns": ["n", "global_statistic", "global_p", "q9", "cumulative_effect", "cumulative_se", "cumulative_ci_lower", "cumulative_ci_upper", "peak_effect"]
+    },
+    {
+      "name": "dlmL56_audited_discrete", "required": true, "evidence_class": "AUDITED_L56_RECONSTRUCTION",
+      "scope": "peak lag and the numbers of lags whose pointwise and simultaneous bands exclude zero (10,000-draw recomputation)",
+      "files": ["dlmL56_audited_discrete.csv"], "keys": ["outcome", "metric"], "result": "dlm_discrete", "tolerance": "exact",
+      "expected_records_by_file": { "dlmL56_audited_discrete.csv": 9 },
+      "required_columns": ["peak_lag", "n_lags_pointwise_excl_null", "n_lags_simultaneous_excl_null"]
+    },
+    {
+      "name": "dlmL56_audited_critical_10000", "required": true, "evidence_class": "AUDITED_L56_RECONSTRUCTION",
+      "scope": "exact seeded reproduction of the simultaneous critical value at the audited draw count (10,000 draws, seed 20260729 + 100 * metric_index + outcome_index)",
+      "files": ["dlmL56_audited_critical_10000.csv"], "keys": ["outcome", "metric"], "result": "dlm_critical_10000", "tolerance": "seeded",
+      "expected_records_by_file": { "dlmL56_audited_critical_10000.csv": 9 },
+      "required_columns": ["simultaneous_critical"]
+    }
+  ]
+}

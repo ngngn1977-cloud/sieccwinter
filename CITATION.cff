@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "sieccwinter: Reproducible Winter Weather and Social-Outcome Analysis for the SIECC Study"
+type: software
+version: 1.0.0
+authors:
+  - family-names: "Gabinet"
+    given-names: "Nahum M."
+    affiliation: "Louis and Gabi Weisfeld School of Social Work, Bar-Ilan University, Ramat Gan, Israel; School of Environmental Sciences, Faculty of Social Sciences, University of Haifa, Haifa, Israel"
+    orcid: "https://orcid.org/0000-0001-5861-1507"
+date-released: "2026-10-15"
+repository-code: "https://github.com/ngngn1977-cloud/sieccwinter"
+license: MIT
+abstract: "R package implementing the SIECC Winter analytical workflow: cumulative-window regressions, L01-L56 distributed-lag models, Benjamini-Hochberg families, input validation and comparison with frozen aggregate reference outputs. It contains no study data; a fully synthetic data set is provided for workflow demonstration only."
+keywords:
+  - weather
+  - winter
+  - social isolation
+  - loneliness
+  - distributed lag models
+  - reproducibility

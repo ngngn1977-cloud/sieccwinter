@@ -1,0 +1,302 @@
+{
+  "protocol_id": "anomaly_history_validation_protocol",
+  "version": "1.0 (Phase 3I, declared before the first manual run)",
+  "status_of_this_document": "DECLARED BEFORE THE MANUAL RUN. Comparison plan for the two exploratory families of the archived V1.4 programme that the deposited record lists as ANOM (7,080 daily-reference anomaly models) and ALT (312 alternative exposure-history tests), plus two supporting frozen tables (anomaly diagnostics, 64 rows; trajectory-PCA variance, 439 rows). Numerical reproduction and independent verification are separate statuses. Nothing here is derived from a result of this run. The families are EXPLORATORY and separate from primary inference, from the nine final L01-L56 models (V2.1), from the archived DLMs (Phase 3E), the cold-burden scan (Phase 3F) and the daily-lag layer (Phase 3H). Horizons are kept as traced: ANOM windows 1-59 days (archived L01-L59); ALT histories use lags 1-56 (the original reads 59 lags but uses 56).",
+  "scope": {
+    "anom": "WINTER_CODE R/120_daily_anomaly.R siecc_participant_day_long, siecc_daily_anomaly_values, siecc_anomaly_diagnostics, siecc_build_anomaly_feature, siecc_daily_anomaly_scan; stage 14_daily_reference_anomaly_scan",
+    "alt": "WINTER_CODE R/130_alternative_methods.R siecc_history_matrix, siecc_row_aggregate, siecc_disjoint_features, siecc_weighted_feature, siecc_trajectory_contrasts, siecc_fit_multiexposure_joint, siecc_alternative_method_scan; stage 15_alternative_exposure_history_methods",
+    "frozen_run": "REDACTED_PUBLIC_BUILD",
+    "text_support": "The manuscript (SIECC_Manuscript_Methods_Results_2809.docx) does not describe either family. SI Table S5 part C lists their multiplicity families only: anomaly scan 59 (lags within a fixed anomaly curve) / 2,360 (all tests within outcome) / 7,080 (complete scan); alternative methods 104 (features within outcome) / 312 (complete grid); SI Table S7 mentions anomaly and alternative-history q families as family-specific. These sizes agree with the traced code (q_curve, q_outcome, q_global). Neither document defines the reference, the anomaly scale or the features; the specification below is therefore traced from the V1.4 code and the frozen outputs, not from the text.",
+    "kept_separate_from": "primary inference; the nine final L01-L56 DLMs; archived L01-L59 DLM and lag-form sensitivity (Phase 3E); cold burden (Phase 3F); daily-lag layer XYD / DAY / MAXT (Phase 3H); no result of this family is combined with another"
+  },
+  "parameters": {
+    "lag_end": 59,
+    "alt_history_end": 56,
+    "tier": "M2_L",
+    "glm_epsilon": 1e-08,
+    "glm_maxit": 25,
+    "min_available_fraction": 0.8,
+    "pca_min_complete_cases": 20,
+    "pca_components_tested": 3,
+    "half_lives": [
+      3,
+      7,
+      14,
+      28
+    ],
+    "disjoint_periods": [
+      [
+        1,
+        7
+      ],
+      [
+        8,
+        28
+      ],
+      [
+        29,
+        56
+      ]
+    ],
+    "recent_remote_days": 14,
+    "rain_metrics": [
+      "IMS_rainfall_total",
+      "IMS_rainy_day_count_ge_1_mm"
+    ],
+    "independent_refit_every_anom": 1,
+    "windows_subset": null,
+    "calendar_axis": "assessment_day - lag"
+  },
+  "specification_trace": {
+    "ANOM": {
+      "grid": "2 reference definitions (all, locality) x 8 metrics x anomaly methods x 2 burden directions x 59 windows x 3 outcomes = 7,080. The methods are traced, not inferred from the count: every metric has the stable anomaly (the original assigns it through the metric's domain: thermal and moisture); the two rainfall metrics (IMS_rainfall_total, IMS_rainy_day_count_ge_1_mm; domain moisture) additionally have the zero-safe log anomaly. 6 x 1 + 2 x 2 = 10 metric-method combinations x 2 references x 2 burdens x 59 x 3 = 7,080 (frozen file: 1,416 stable rows and 354 zero-safe rows per reference and burden).",
+      "order": "reference (all, locality), metric (configuration order), method (stable, then zero-safe for the rainfall metrics), burden (signed_mean, absolute_mean), window 1..59, outcome",
+      "exposure_history": "the daily field <prefix>_L01..L59 of each metric (participant x lag). The calendar axis is calendar_date = assessment_date - lag. The package's canonical data hold assessment_day (days since the first assessment, 29 January 2026; the manuscript and SI Table S2 define it so), a fixed offset of the date, so assessment_day - lag groups participant-days exactly as the date does; the one-to-one correspondence of day and date is by definition (the audited SAV shows 33 distinct values of each) and is not verifiable from the canonical CSV: it is tested indirectly by the frozen anomaly diagnostics (min, max, 1st and 99th percentile of all participant-day anomalies per metric, method and reference).",
+      "reference_definition": "for each participant-day, the reference is the mean of the other participants' values of the same metric on the same calendar day (leave-one-out): all = every participant; locality = participants of the same Locality_3group. total = sum of finite values of the group, n = number of finite values; reference_mean_loo = (total - value) / (n - 1) for a finite value in a group with n >= 2, otherwise NA (a participant who is alone in a calendar-day x locality group has no reference). reference_sd = SD of the group's finite values (n >= 2).",
+      "anomaly_scales": "stable_anomaly = (value - reference_mean_loo) / pooled_within_day_sd, where pooled_within_day_sd is the SD of all finite residuals (value - reference_mean_loo) of the metric over all participants and lags (one scale per metric and reference); zero_safe_log_anomaly (rainfall metrics only) = log1p(value) - log1p(reference_mean_loo); literal_ratio = (value - loo) / loo and daily_z = (value - loo) / reference_sd are computed and summarised in the diagnostics but not used in any model.",
+      "features": "for window W and burden: over lags 1..W, available = number of finite anomalies; the feature is NA if available < ceiling(0.8 x W); otherwise the mean of the anomalies (signed_mean) or of their absolute values (absolute_mean) with NA removed. No other transformation or standardisation: the model exposure is the raw feature.",
+      "model": "outcome ~ feature + M2_L covariates (Sex, Age, AssessmentDay_centered, Locality_3group, Econ_STS); complete cases on outcome, covariates and feature; gaussian OLS with HC3 inference (UCLA_Lonliness_SCORE, Isolation_cont) and ordinary maximum-likelihood logistic regression with Wald inference (Int_dummy; glm epsilon 1e-8, maxit 25) in the validated engine, with the 13 design and influence diagnostics. The original also runs a Firth fit for the binary outcome, but no Firth column is part of the frozen output and none is compared. transformation = '<reference>:<method>:<burden>', exposure = '.__anomaly', exposure_unit = 'daily_reference_anomaly', primary_role = 'EXPLORATORY_DAILY_ANOMALY'.",
+      "missing_data": "supplied missing daily values are kept missing (never imputed); a missing value is excluded from the reference and gives a missing anomaly; with the locality reference a singleton group gives n = 54 in the frozen models (1,620 of 7,080 rows have n = 54, all in the locality reference).",
+      "multiplicity": "Benjamini-Hochberg over finite nominal p values: q_global over all 7,080; q_outcome within outcome (3 x 2,360); q_curve over the 59 windows within outcome x metric x reference x method x burden (120 families of 59).",
+      "diagnostics_table": "daily_anomaly_diagnostics.csv: for each reference (all, locality), metric and method (literal_ratio, daily_z, stable_anomaly, zero_safe_log_anomaly): n_total, n_finite, missing_fraction, minimum, maximum, 1st and 99th percentile (type 7) of the participant-day values; 64 rows."
+    },
+    "ALT": {
+      "grid": "8 metrics x 3 outcomes x 13 tests = 312: one three-period joint test (recent 1-7, intermediate 8-28, remote 29-56 days), five weighted cumulative features (half-life 3, 7, 14, 28 days and uniform over 56 days), four trajectory contrasts (overall_mean, recent_minus_remote, linear_lag_contrast, curvature_contrast) and, when the PCA can be computed, the first three principal components of the 56-day history.",
+      "order": "metric (configuration order), outcome, then joint, five weighted, four contrasts, PC1-PC3",
+      "history": "lags 1..56 of the metric's daily field (the original reads 59 and uses 56). Aggregation of the disjoint periods follows the metric: mean for temperature and humidity metrics, sum for the two rainfall metrics (configuration 'aggregation'); NA only if no value is finite; no 80% rule for the disjoint periods.",
+      "joint_test": "the three period aggregates are each z-scored (sample SD, NA if the SD is 0) and entered together with the M2_L covariates; the test is the joint test of the three terms against the covariate-only model on complete cases: gaussian F test from the residual sums of squares (df1 = 3, df2 = residual df of the full model); binary outcome likelihood-ratio chi-square on 3 df from ordinary glm fits. effect is NA; n is the complete-case count.",
+      "weighted_cumulative": "weights 0.5^((lag - 1) / half_life) over lags 1..56 (equal weights for the uniform feature); the feature is NA if fewer than ceiling(0.8 x 56) = 45 lags are finite; otherwise the weighted mean over the finite lags. Fitted as a single exposure with the M2_L covariates in the validated engine (raw feature, no standardisation); effect = standardised_effect, p = nominal_p.",
+      "trajectory_contrasts": "overall_mean = row mean (NA removed); recent_minus_remote = mean of lags 1-14 minus mean of lags 43-56; linear_lag_contrast = sum(x x linear) / sum(|linear| over finite lags) with linear = lag centred; curvature_contrast likewise with quadratic = linear^2 - mean(linear^2); no availability rule. Fitted as single exposures as above.",
+      "trajectory_pca": "principal components of the 56 lag columns (centred and scaled) on participants with all 56 lags finite, if at least 20 such participants exist; scores of the first three components (NA for the other participants) are fitted as single exposures. The sign of a principal component is arbitrary (decided by the linear-algebra library); it is compared as it is and any sign difference is reported separately (alt_pca_sign_diagnostic.csv), never accepted silently. The component variance table (439 rows) is a supporting frozen output.",
+      "multiplicity": "BH over finite p values: q_global over all 312, q_outcome within outcome (3 x 104). The SI's 104 / 312 agree."
+    }
+  },
+  "reference_files": [
+    {
+      "component": "ANOM",
+      "file": "daily_anomaly_results.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 7080,
+      "keys": [
+        "outcome",
+        "metric",
+        "reference_definition",
+        "anomaly_method",
+        "burden_direction",
+        "window_or_lag"
+      ],
+      "expected_grid": {
+        "outcomes": 3,
+        "per_outcome": 2360
+      }
+    },
+    {
+      "component": "ALT",
+      "file": "alternative_method_results.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 312,
+      "keys": [
+        "outcome",
+        "metric",
+        "method",
+        "feature"
+      ],
+      "expected_grid": {
+        "outcomes": 3,
+        "per_outcome": 104
+      }
+    },
+    {
+      "component": "ANOMDIAG",
+      "file": "daily_anomaly_diagnostics.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 64,
+      "keys": [
+        "metric",
+        "method",
+        "reference"
+      ]
+    },
+    {
+      "component": "ALTPCA",
+      "file": "alternative_PCA_variance.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 439,
+      "keys": [
+        "metric",
+        "component"
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "ANOM_7080",
+      "reference": "ANOM",
+      "keys": [
+        "outcome",
+        "metric",
+        "reference_definition",
+        "anomaly_method",
+        "burden_direction",
+        "window_or_lag"
+      ],
+      "fields": [
+        "n",
+        "event_count",
+        "non_event_count",
+        "parameter_count",
+        "residual_df",
+        "rank",
+        "condition_number",
+        "maximum_vif",
+        "coefficient",
+        "model_based_se",
+        "robust_hc3_se",
+        "statistic",
+        "robust_statistic",
+        "ci_lower",
+        "ci_upper",
+        "nominal_p",
+        "standardised_effect",
+        "iqr_effect",
+        "odds_ratio_raw",
+        "odds_ratio_sd",
+        "odds_ratio_iqr",
+        "lr_statistic",
+        "lr_df",
+        "lr_p",
+        "model_f",
+        "model_f_p",
+        "r_squared",
+        "adjusted_r_squared",
+        "partial_r_squared_weather",
+        "nagelkerke_r_squared",
+        "aic",
+        "aicc",
+        "residual_rmse",
+        "brier_score",
+        "log_loss",
+        "auc",
+        "calibration_intercept",
+        "calibration_slope",
+        "maximum_coefficient_magnitude",
+        "maximum_cooks_distance",
+        "maximum_leverage",
+        "maximum_absolute_dfbeta",
+        "influential_case_count",
+        "exposure_sd",
+        "exposure_iqr",
+        "exposure_p10",
+        "exposure_p25",
+        "exposure_p75",
+        "exposure_p90",
+        "q_global",
+        "q_curve",
+        "q_outcome"
+      ],
+      "categorical": [
+        "model_id",
+        "outcome_family",
+        "exposure",
+        "exposure_unit",
+        "transformation",
+        "model_tier",
+        "primary_role",
+        "status",
+        "not_estimable_reason",
+        "convergence",
+        "separation_status"
+      ],
+      "expected_records": 7080,
+      "expected_compared_cells": 285560
+    },
+    {
+      "id": "ALT_312",
+      "reference": "ALT",
+      "keys": [
+        "outcome",
+        "metric",
+        "method",
+        "feature"
+      ],
+      "fields": [
+        "n",
+        "effect",
+        "p",
+        "q_global",
+        "q_outcome"
+      ],
+      "categorical": [],
+      "expected_records": 312,
+      "expected_compared_cells": 1536
+    },
+    {
+      "id": "ANOMDIAG_64",
+      "reference": "ANOMDIAG",
+      "keys": [
+        "metric",
+        "method",
+        "reference"
+      ],
+      "fields": [
+        "n_total",
+        "n_finite",
+        "missing_fraction",
+        "minimum",
+        "maximum",
+        "p01",
+        "p99"
+      ],
+      "categorical": [],
+      "expected_records": 64,
+      "expected_compared_cells": 400
+    },
+    {
+      "id": "ALTPCA_439",
+      "reference": "ALTPCA",
+      "keys": [
+        "metric",
+        "component"
+      ],
+      "fields": [
+        "variance_fraction",
+        "cumulative_variance"
+      ],
+      "categorical": [],
+      "expected_records": 439,
+      "expected_compared_cells": 878
+    }
+  ],
+  "tolerance": {
+    "class": "cumulative",
+    "exact": {
+      "abs": 1e-12,
+      "rel": 1e-12
+    },
+    "within_tolerance": {
+      "abs": 1e-07,
+      "rel": 1e-06
+    },
+    "note": "the existing deterministic-fit class of the configuration (cumulative_abs, cumulative_rel) as for the cumulative, cold-burden and daily-lag references; no new criterion is introduced; EXACT / WITHIN_TOLERANCE / DIFFERENT; unmatched, duplicate, blank, unclassified and non-finite mismatches fail"
+  },
+  "verification": {
+    "ANOM": "(1) whole grid: the anomaly values of both references recomputed cell by cell by an independent route (for every participant-day the mean of the other participants, no group totals) and the pooled scales, stable and zero-safe anomalies and the diagnostics table compared; (2) whole grid: every one of the 2 x 10 x 2 x 59 x 55 window features recomputed by a literal per-participant route; (3) whole grid: BH q_global, q_outcome and q_curve recomputed with p.adjust; (4) scale and inference identities of every model (package and frozen); (5) independent lm / glm refit of every model (declared coverage: every 1st of 7,080, parameter independent_refit_every_anom) compared at the cumulative tolerance class.",
+    "ALT": "(1) whole grid: the features recomputed by an independent route for every participant; (2) whole grid: independent lm / glm refit of all 288 single-feature models and an independent F or likelihood-ratio computation of all 24 joint tests; (3) the PCA variance fractions from an independent eigen decomposition of the correlation matrix and the absolute component scores; (4) BH q_global and q_outcome recomputed with p.adjust."
+  },
+  "statuses": {
+    "EXECUTION_STATUS": "PASS only when the run completes",
+    "INPUT_PROVENANCE_STATUS": "PASS only when all four reference files exist and match the declared SHA-256, bytes, counts, keys, columns and grids",
+    "ANOM_REPRODUCTION_STATUS": "PASS only when ANOM_7080 and ANOMDIAG_64 are EXACT / WITHIN_TOLERANCE with every declared cell compared and every categorical item equal",
+    "ANOM_VERIFICATION_STATUS": "PASS only when every independent check passes",
+    "ALT_REPRODUCTION_STATUS": "PASS only when ALT_312 and ALTPCA_439 are EXACT / WITHIN_TOLERANCE with every declared cell compared (a sign difference of a principal component is a difference)",
+    "ALT_VERIFICATION_STATUS": "PASS only when every independent check passes",
+    "COVERAGE_STATUS": "PASS only when no record or cell is missing, duplicated, unmatched or unclassified and the compared-cell counts equal the declared counts",
+    "SOURCE_INTEGRITY_STATUS": "PASS only when the package source fingerprint is unchanged during the run"
+  },
+  "not_assessed": "scientific interpretation of the anomaly and alternative-history associations; the 120 ANOM figure codes of the deposited figure crosswalk; the manuscript and SI text; the standing J02 (glm epsilon entry points) stays open",
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "step": "ordinal refinement (Phase 3B.2)",
+  "declared": "Declared on synthetic development data BEFORE any study-data run. The values below are fixed; a run reports against them and never adjusts them. The criteria of the existing Batch B ordinal verification (log-likelihood 1e-6, coefficient 1e-4, SE 1e-4) are not loosened or replaced: they remain in force for the legacy table and are reported for the refined table as well.",
+  "protocol": {
+    "id": "POLR_SCALED_TIGHT_V1",
+    "function": "MASS::polr (method = logistic, Hess = TRUE) - unchanged specification: outcome ordered(integration_score, 1:4) with empty categories dropped, M2-L covariates, identical complete-case participants, logistic link, Wald z inference, odds ratio per SD of the exposure, BH over the 80 p-values",
+    "predictor_scaling": "every non-intercept column of the model matrix (exposure, covariates, locality dummies) is centred on its complete-case mean and divided by its complete-case SD before fitting; coefficients, thresholds and the covariance matrix are transformed back exactly (beta = gamma / s; zeta = zeta_s + sum(beta * mu); V = T V_s T')",
+    "optim_control": { "reltol": 1e-14, "maxit": 5000, "ndeps": 1e-5, "ndeps_note": "step of the finite-difference Hessian that polr reports (default 1e-3)" },
+    "restarts": { "max": 3, "rule": "restart polr from its own solution while the Newton decrement exceeds restart_if_newton_decrement_above", "restart_if_newton_decrement_above": 1e-6 },
+    "same_protocol_for_all_models": true
+  },
+  "acceptance_criteria": {
+    "note": "A model is ACCEPTED only if every criterion holds. The optimiser convergence code is necessary but never sufficient.",
+    "optimiser_code_zero": true,
+    "newton_decrement_max": 1e-5,
+    "newton_decrement_note": "sqrt(g' (-H)^-1 g) at the returned solution, analytic derivatives, affine invariant; BFGS with reltol 1e-14 cannot go below about 1.5e-7 because the objective is evaluated to double precision",
+    "loglik_abs_diff_vs_independent_max": 1e-9,
+    "loglik_not_above_independent_by_more_than": 1e-9,
+    "thresholds": "all finite and strictly increasing",
+    "information_matrix": { "polr_hessian_min_eigenvalue_above": 0, "analytic_observed_information_min_eigenvalue_above": 0, "polr_hessian_condition_number_max": 1e12, "all_parameter_se_relative_diff_vs_analytic_max": 1e-5 },
+    "coefficients_and_thresholds_abs_diff_vs_independent_max": 1e-6,
+    "coefficients_and_thresholds_note": "difference divided by max(1, |value|)",
+    "exposure_coefficient_abs_diff_vs_independent_max": 1e-6,
+    "exposure_se_relative_diff_vs_independent_max": 1e-6,
+    "independent_fit": { "gradient_max_abs_at_most": 1e-8, "newton_decrement_at_most": 1e-8 },
+    "all_estimates_finite": true,
+    "inherited_batch_b_criteria_still_reported": { "loglik": 1e-6, "coefficient": 1e-4, "se": 1e-4 }
+  },
+  "statuses": {
+    "LEGACY_REPRODUCTION": "the legacy polr table recomputed in this run equals the Batch B frozen reference (strict validator, existing cumulative tolerance) and, if a legacy run folder is supplied, equals that run's ordinal_integration.csv (coefficient, SE, p, q80, n exactly)",
+    "LEGACY_NUMERICAL_VERIFICATION": "informational: how many legacy polr fits are at the maximum (existing Batch B rule); never part of pass/fail",
+    "REFINED_NUMERICAL_VERIFICATION": "PASS only if all 80 refined models are ACCEPTED; FAIL otherwise; never NOT_TESTED-as-PASS",
+    "REFINED_VS_LEGACY": "descriptive comparison of the refined and the legacy table; not a pass/fail status"
+  }
+}

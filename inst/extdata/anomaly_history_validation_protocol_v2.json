@@ -1,0 +1,67 @@
+{
+  "protocol": "anomaly_history_validation_protocol_v2",
+  "version": "2",
+  "status_of_this_document": "POST HOC revision, declared 12 Oct 2026 before any study run under version 2. It revises ONLY the gaussian implied-SD identity of the ANOM verification. Protocol v1 (config/anomaly_history_validation_protocol.json) is not edited and still governs every parameter, reference, comparison, tolerance and every other check. Runs made before this revision keep their own recorded statuses: anomhist_20261004_141846_28bd and run_20261012_114559_4737 keep ANOM_VERIFICATION_STATUS=FAIL in their own records.",
+  "author_decision": {
+    "by": "N. Gabinet",
+    "date": "2026-10-12",
+    "decision": "revise the ANOM scale identity check, post hoc"
+  },
+  "extends_protocol": {
+    "file": "config/anomaly_history_validation_protocol.json",
+    "sha256": "REDACTED_PUBLIC_BUILD",
+    "scope": "everything except the gaussian implied-SD identity is taken from v1 unchanged; protocol v2 refuses to load if this file has changed"
+  },
+  "post_hoc_reason": "The v1 identity row 'gaussian standardised_effect: implied SD(outcome) constant within each outcome' is evaluated within groups of equal n (R/daily_layer.R .siw_dl_identities splits by n; R/cold_burden.R siw_cold_identities). It assumes that rows with the same n share one complete-case sample. The declared post hoc diagnostic (validation/ANOM_SAMPLE_SD_DIAGNOSTIC_DECLARATION.md, validation/anom_sample_sd_diag.R) showed that this premise is false for the study data: two different complete-case samples of size 54 exist, so equal n does not imply the same sample and the by-n constancy row fails although every row's scale fields are internally consistent.",
+  "evidence": {
+    "run": "run_20261012_114559_4737",
+    "step": "15 ANOM_SAMPLE_SD_DIAGNOSTIC",
+    "decision": "PREMISE_DISPROVEN_EQUAL_N_DIFFERENT_SAMPLES",
+    "checks": "D1-D5 PASS",
+    "direct_vs_implied_sd": "the directly measured SD of each row's own complete-case sample equals the implied SD to <= 7.5e-15 (relative)",
+    "complete_case_sets": "the two n = 54 sets differ by one participant each",
+    "diagnostic_script_sha256": "REDACTED_PUBLIC_BUILD",
+    "diagnostic_declaration_sha256": "REDACTED_PUBLIC_BUILD"
+  },
+  "rule_v2": {
+    "id": "ANOM_IDENTITY_V2_ROW_SD",
+    "check": "gaussian standardised_effect: implied SD(outcome) equals the directly measured SD of the row's own complete-case sample",
+    "applies_to": "every COMPLETED gaussian ANOM row (both reference definitions, every metric-method, both burdens, every window), in the package results and in the frozen reference table",
+    "implied_sd": "coefficient x exposure_sd / standardised_effect",
+    "direct_sd": "stats::sd(y[mask]) for the row's outcome y",
+    "mask": "the traced complete-case mask of validation/anom_sample_sd_diag.R (asd_masks): mask = tier_ok & is.finite(y) & is.finite(x); tier_ok = stats::complete.cases(siw_tier_matrix(dat, config$tiers[[parameters.tier]])); x = siw_anomaly_features(siw_anomaly_values(dat, config, protocol_v1, reference_definition)$metrics[[metric]][[anomaly_method]], parameters.min_available_fraction)[[burden_direction]][, window_or_lag]; dat = siw_prepare_data(<canonical CSV>)",
+    "relative_difference": "|implied_sd - direct_sd| / |direct_sd| (the identity's own scaling; 0 when |implied_sd - direct_sd| <= 1e-300)",
+    "tolerance": 1e-09,
+    "tolerance_note": "unchanged from v1 (siw_cold_identities, tol = 1e-9)",
+    "fails_when": [
+      "the relative difference exceeds 1e-9",
+      "a row has no traced mask (its key cannot be traced)",
+      "the traced mask size differs from the recorded n",
+      "the implied or the direct SD is not finite"
+    ]
+  },
+  "v1_identity_kept": "The v1 by-n row is still computed with the unchanged code and reported as 'V1 identity (superseded, kept for the record)'. It is never silently removed; it no longer enters ANOM_VERIFICATION_STATUS_V2.",
+  "statuses": {
+    "ANOM_VERIFICATION_STATUS": "the v1 composition, unchanged; still computed and shown for the record (superseded)",
+    "ANOM_VERIFICATION_STATUS_V2": "the v1 components with the v1 by-n implied-SD row replaced by rule_v2 (package and frozen); governs the ANOM verification of runs made under this protocol"
+  },
+  "near_zero_scaling_recorded": {
+    "note": "previously code-only (R/anomaly_history.R); recorded here explicitly; unchanged",
+    "checks": [
+      {
+        "check": "independent anomaly values (siw_anomaly_values_verify): stable and zero-safe anomalies and their diagnostics",
+        "relative_difference": "|a - b| / max(1, |b|)",
+        "threshold": 1e-09,
+        "reason": "anomalies are on a unit scale; a value that is zero up to rounding must not give an unbounded ratio"
+      },
+      {
+        "check": "window features (siw_anomaly_features_verify): vectorised vs literal per-participant feature",
+        "relative_difference": "|a - b| / max(1, |b|)",
+        "threshold": 1e-12,
+        "reason": "a mean of anomalies that cancels to zero up to rounding must not give an unbounded ratio"
+      }
+    ]
+  },
+  "unchanged": "No other check, tolerance, reference, parameter, multiplicity family or status rule changes.",
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

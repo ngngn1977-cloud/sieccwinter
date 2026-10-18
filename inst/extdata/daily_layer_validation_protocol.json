@@ -1,0 +1,270 @@
+{
+  "protocol_id": "daily_layer_validation_protocol",
+  "version": "1.0 (Phase 3H / Batch D, declared before the first manual run)",
+  "status_of_this_document": "DECLARED BEFORE THE MANUAL RUN. Comparison plan for the documented daily-lag layer of the archived V1.4 programme: XYD (1,416 crude daily-lag tests), DAY (1,416 adjusted single-day regressions) and MAXT (240 max-|r| permutation statistics). Numerical reproduction, independent verification and the assessment of the permutation assumptions are separate statuses. Nothing here is derived from a result of this run; no seed is invented (the MAXT seed rule is traced to the legacy code). Separate from the nine final L01-L56 models (V2.1); horizon L01-L59 (archived).",
+  "scope": {
+    "xyd": "WINTER_SOURCE R/060_xy.R siecc_xy_scan_daily; stage 04_xy_daily",
+    "day": "R/070_cumulative_models.R siecc_single_day_adjusted_grid; stage 07_single_day_adjusted_grid (primary model tier M2_L)",
+    "maxt": "R/100_resampling.R siecc_xy_permutation_maxT / siecc_xy_maxT_all_outcomes; stage 12B_selected_XY_maxT",
+    "frozen_run": "REDACTED_PUBLIC_BUILD",
+    "kept_separate_from": "the nine final L01-L56 DLMs; archived L01-L59 DLM and lag-form sensitivity (Phase 3E); cold burden (Phase 3F); no archived result is combined with a final model"
+  },
+  "parameters": {
+    "lag_end": 59,
+    "tier": "M2_L",
+    "glm_epsilon": 1e-08,
+    "glm_maxit": 25,
+    "maxt_replicates": 10000,
+    "maxt_seed_step": 1000,
+    "independent_refit_every": 40,
+    "lags_subset": null
+  },
+  "specification_trace": {
+    "XYD": {
+      "outcomes": "UCLA_Lonliness_SCORE, Isolation_cont (gaussian), Int_dummy (binomial)",
+      "exposures": "the eight metrics' daily fields <prefix>_L01..L59 (UTCI, MRT, T2M, RH, IMS_IDW_TD_MEAN, IMS_IDW_RH_MEAN, IMS_IDW_RAIN_TOTAL, IMS_IDW_RAIN_DAYS1), each lag separately (no cumulation)",
+      "order": "outcome, metric, lag",
+      "missing_data": "pairs with finite outcome and exposure only; fewer than 4 pairs or a constant variable gives NA; the supplied rainfall missingness is preserved (the single missing rainfall total at lag 35 gives n = 54 for the three IMS_rainfall_total L35 tests, 55 elsewhere)",
+      "statistics": "n; Pearson r (point-biserial for the 0/1 outcome) and its t p value (stats::cor.test); Spearman rho and p (exact = FALSE); Kendall tau and p (exact = FALSE); M0 regression of the outcome on the exposure alone (tier 'M0_XY', no covariates): coefficient, 95% CI, p, R2, adjusted R2, Nagelkerke R2 (binary), odds ratio per SD (binary), partial R2; status; fitting: OLS with HC3 inference (gaussian), ordinary ML logistic with Wald inference (binary; glm default control epsilon 1e-8 / maxit 25)",
+      "multiplicity": "BH q_pearson_global, q_spearman_global, q_model_global over all 1,416 tests; q_*_outcome within outcome (3 families of 472); there are no within-outcome-metric families in the daily scan (unlike the cumulative scan)"
+    },
+    "DAY": {
+      "model": "outcome ~ exposure + M2_L covariates (Sex, Age, AssessmentDay_centered, Locality_3group, Econ_STS); raw daily exposure on its natural scale (transformation 'raw_daily', exposure_unit the metric's unit); complete cases on outcome, covariates and the single daily exposure (n = 54 for the rainfall-total L35 models, 55 elsewhere); gaussian HC3 / binary ML Wald as in the cumulative engine (epsilon 1e-8, maxit 25); the 13 design and influence diagnostics of the validated engine; no Firth column is part of the frozen output",
+      "multiplicity": "q59: BH over the 59 lags within outcome x metric (24 families); q472: BH over 8 x 59 within outcome (3 families); q_global: BH over all 1,416; over finite p values"
+    },
+    "MAXT": {
+      "family_structure": "TRACED from the code, not inferred from the row count: for each of the 3 outcomes separately, the 80 CUMULATIVE exposure fields (8 metrics x 10 windows 1,3,7,14,21,28,35,42,49,56 days; field names <cumulative prefix><window>D, in the order of the cumulative XY scan) = 3 x 80 = 240 statistics; the maximum is taken within one outcome over its 80 fields; no adjustment across outcomes; the daily-lag exposures are NOT part of MAXT",
+      "statistic_and_hypothesis": "two-sided: |Pearson r| of each exposure with the outcome using stats::cor(use = 'pairwise.complete.obs') (point-biserial for the 0/1 outcome); no covariates (crude test); H0: the outcome is independent of all 80 exposures; single-step maxT (Westfall-Young type)",
+      "permutation": "the OUTCOME vector is permuted across participants with sample(y) (unit: participant; unrestricted: no stratification by assessment date or covariates); the exposure columns are kept fixed",
+      "replicates": "10,000 requested per outcome (V1.4 full profile, config maxT_replicates); the maximum of a replicate is max(|r|, na.rm = TRUE); a replicate is 'successful' if the maximum is finite; the original does not store the number of successes",
+      "seed_and_rng": "set.seed(config seed + 1000 x outcome index) immediately before the replicate loop; seed = 20260729 + 1000 x i with i = 1 (UCLA_Lonliness_SCORE), 2 (Isolation_cont), 3 (Int_dummy) = 20261729, 20262729, 20263729; one sample(y) per replicate and no other RNG use; R 4.4.3 defaults (Mersenne-Twister, Inversion, Rejection); the package sets the RNG kinds explicitly and restores the caller's state",
+      "adjusted_p": "p_j = (1 + #{replicates with max >= observed_j}) / (1 + #{replicates with a finite max}); ties count (>=); the observed arrangement is counted as one permutation (finite-simulation correction); minimum attainable p = 1/10,001",
+      "degenerate_cases": "constant or all-missing exposure: correlation NA, dropped from the maximum; a replicate with no finite correlation has maximum -Inf and is not counted as successful; an observed statistic that is NA makes every comparison NA, which the original drops, giving that statistic the smallest attainable p (anti-conservative; flagged by the assessment, not changed)",
+      "limitations_to_assess_not_to_change": "unrestricted participant permutation ignores clustering of outcomes by the 33 assessment dates (exchangeability); no covariate adjustment; |r| statistics with different n (54 vs 55) are compared on one scale; the 80 statistics are nested and dependent; the Monte Carlo error of p is about 0.005 at p = 0.5; the manuscript does not describe this test (SI Table S5 / notes only)"
+    }
+  },
+  "reference_files": [
+    {
+      "component": "XYD",
+      "file": "XY_daily_all_1416.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 1416,
+      "keys": [
+        "outcome",
+        "metric",
+        "window_or_lag"
+      ]
+    },
+    {
+      "component": "DAY",
+      "file": "single_day_adjusted_regression_grid.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 1416,
+      "keys": [
+        "outcome",
+        "metric",
+        "window_or_lag",
+        "model_tier"
+      ]
+    },
+    {
+      "component": "MAXT",
+      "file": "selected_xy_maxT.csv",
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "bytes": -1,
+      "expected_records": 240,
+      "keys": [
+        "outcome",
+        "exposure_field"
+      ],
+      "expected_grid": {
+        "outcomes": 3,
+        "per_outcome": 80
+      }
+    }
+  ],
+  "tolerance": {
+    "XYD_DAY": {
+      "class": "cumulative",
+      "exact": {
+        "abs": 1e-12,
+        "rel": 1e-12
+      },
+      "within_tolerance": {
+        "abs": 1e-07,
+        "rel": 1e-06
+      },
+      "source": "config/sieccwinter_config.json tolerances (same fitting engine as the validated cumulative grid)"
+    },
+    "MAXT": {
+      "class": "exact",
+      "abs": 1e-12,
+      "rel": 1e-12,
+      "rule": "the permutation test is reproduced with the original seed and sampling sequence, so the statistics and p values must be EXACT (counts k/10,001); a difference is DIFFERENT and fails; a Monte Carlo-consistency comparison would be reported separately and would NOT replace the exact criterion"
+    }
+  },
+  "comparisons": [
+    {
+      "id": "XYD_1416",
+      "reference": "XYD",
+      "keys": [
+        "outcome",
+        "metric",
+        "window_or_lag"
+      ],
+      "fields": [
+        "n",
+        "pearson_or_point_biserial_r",
+        "pearson_p",
+        "spearman_rho",
+        "spearman_p",
+        "kendall_tau",
+        "kendall_p",
+        "coefficient",
+        "ci_lower",
+        "ci_upper",
+        "model_p",
+        "r_squared",
+        "adjusted_r_squared",
+        "nagelkerke_r_squared",
+        "odds_ratio_sd",
+        "partial_r_squared",
+        "q_pearson_global",
+        "q_spearman_global",
+        "q_model_global",
+        "q_model_outcome",
+        "q_spearman_outcome",
+        "q_pearson_outcome"
+      ],
+      "categorical": [
+        "status",
+        "outcome_family",
+        "exposure_type",
+        "exposure_field"
+      ],
+      "expected_records": 1416,
+      "expected_compared_cells": 27848
+    },
+    {
+      "id": "DAY_1416",
+      "reference": "DAY",
+      "keys": [
+        "outcome",
+        "metric",
+        "window_or_lag",
+        "model_tier"
+      ],
+      "fields": [
+        "n",
+        "event_count",
+        "non_event_count",
+        "parameter_count",
+        "residual_df",
+        "rank",
+        "condition_number",
+        "maximum_vif",
+        "coefficient",
+        "model_based_se",
+        "robust_hc3_se",
+        "statistic",
+        "robust_statistic",
+        "ci_lower",
+        "ci_upper",
+        "nominal_p",
+        "standardised_effect",
+        "iqr_effect",
+        "odds_ratio_raw",
+        "odds_ratio_sd",
+        "odds_ratio_iqr",
+        "lr_statistic",
+        "lr_df",
+        "lr_p",
+        "model_f",
+        "model_f_p",
+        "r_squared",
+        "adjusted_r_squared",
+        "partial_r_squared_weather",
+        "nagelkerke_r_squared",
+        "aic",
+        "aicc",
+        "residual_rmse",
+        "brier_score",
+        "log_loss",
+        "auc",
+        "calibration_intercept",
+        "calibration_slope",
+        "maximum_coefficient_magnitude",
+        "maximum_cooks_distance",
+        "maximum_leverage",
+        "maximum_absolute_dfbeta",
+        "influential_case_count",
+        "exposure_sd",
+        "exposure_iqr",
+        "exposure_p10",
+        "exposure_p25",
+        "exposure_p75",
+        "exposure_p90",
+        "q59",
+        "q472",
+        "q_global"
+      ],
+      "categorical": [
+        "status",
+        "convergence",
+        "separation_status",
+        "outcome_family",
+        "transformation",
+        "exposure_unit",
+        "primary_role",
+        "exposure"
+      ],
+      "expected_records": 1416,
+      "expected_compared_cells": 57112
+    },
+    {
+      "id": "MAXT_240",
+      "reference": "MAXT",
+      "keys": [
+        "outcome",
+        "exposure_field"
+      ],
+      "fields": [
+        "observed_abs_correlation",
+        "p_outcome_maxT"
+      ],
+      "categorical": [],
+      "expected_records": 240,
+      "expected_compared_cells": 480
+    }
+  ],
+  "verification": {
+    "XYD": "all 1,416 rows recomputed independently: Pearson (formula, t p), Spearman (Pearson on average ranks, t approximation), Kendall tau-b with its tie-corrected normal approximation (own code), M0 regression (own formulas, own Newton logistic) at relative tolerance 1e-6; q families recomputed with p.adjust BH",
+    "DAY": "scale and inference identities over all estimable models for the package and the frozen file; q59 / q472 / q_global recomputed with p.adjust BH; independent formula-based refit of a deterministic sample (every 40th model in result order: 36 of 1,416)",
+    "MAXT": "the optimised engine is compared with the ORIGINAL cor-based route run on the same seeds for all 3 x 10,000 replicates (maxima to 1e-12; identical p); replicate requested / successful / near-tie recomputations are reported per outcome",
+    "MAXT_assumptions": "assessed separately and reported as REVIEW (never PASS): exchangeability (between-date share of outcome variance), unequal n across statistics, observed-NA handling, Monte Carlo error, attainable minimum, share of p = 1; the original method is not replaced"
+  },
+  "statuses": {
+    "EXECUTION_STATUS": "PASS if the run completed",
+    "INPUT_PROVENANCE_STATUS": "PASS only if all three reference files exist with the declared SHA-256 and bytes, record counts, unique keys, required columns and the MAXT grid (3 outcomes x 80); otherwise FAIL and nothing is compared",
+    "XYD_REPRODUCTION_STATUS": "PASS only if 27,848 declared cells have no DIFFERENT / NONFINITE / UNMATCHED / unclassified cell and the categorical fields are identical",
+    "XYD_VERIFICATION_STATUS": "PASS only if every independent quantity and q family agrees",
+    "DAY_REPRODUCTION_STATUS": "same for the 57,112 DAY cells",
+    "DAY_VERIFICATION_STATUS": "PASS only if identities, multiplicity and the sampled refit all pass",
+    "MAXT_REPRODUCTION_STATUS": "PASS only if all 480 cells are EXACT",
+    "MAXT_VERIFICATION_STATUS": "PASS only if the optimised and original routes agree for every replicate",
+    "MAXT_ASSUMPTIONS_STATUS": "REVIEW (an assessment, not a pass/fail)",
+    "COVERAGE_STATUS": "PASS only if every required comparison is present, classified and complete",
+    "SOURCE_INTEGRITY_STATUS": "PASS only if the source fingerprint is unchanged during the run",
+    "carried_unchanged": "FINAL_NINE_L56 = ACCEPTED_UNDER_V2_1; ARCHIVED_DLM_DETERMINISTIC = ACCEPTED_PHASE3E1; COLD_BURDEN_NUMERICAL = ACCEPTED_PHASE3F1; MANUSCRIPT_CONCORDANCE = REVIEW; FIGURE_PROVENANCE = NOT_TESTED; DLNM_EQUALITY = NOT_TESTED; J02 (glm epsilon entry points) = OPEN"
+  },
+  "exit_codes": {
+    "0": "all statuses PASS and nothing open (not expected: MAXT assumptions stay REVIEW)",
+    "3": "all reproduction and verification statuses PASS with MAXT assumptions under REVIEW (expected best case)",
+    "4": "a status FAILED or evidence is missing",
+    "1": "execution failure",
+    "2": "invalid arguments or R missing"
+  },
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

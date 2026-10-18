@@ -1,0 +1,60 @@
+{
+  "version": "2.1.0-candidate",
+  "tool": "Phase 3D validation protocol V2.1 (candidate): corrected covariance validation rule",
+  "status_of_this_document": "CANDIDATE, adoption pending review. V2.1 corrects ONLY the covariance validation rule of V2. It is a POST HOC revision made after reviewing the V2 run (reports/PHASE3D6_MANUAL_VALIDATION_V2_REVIEW.md) and after V1 and the orientation investigation. It is NOT a prespecified criterion and it is NOT an unchanged criterion: the validation METRIC for covariance changes (a metric that was shown not to measure what V2 claimed is replaced by the exact quantity). V1 (config/dlm_validation_protocol.json, hash REDACTED_PUBLIC_BUILD), V1 plan (REDACTED_PUBLIC_BUILD), V2 (config/dlm_validation_protocol_v2.json, hash REDACTED_PUBLIC_BUILD), their outputs and recorded statuses (V1: REFERENCE_COMPARISON = FAIL, SIMULTANEOUS_EXACT_SEEDED = FAIL; V2 run dlmvalidatev2_20261003_095400_4e62: nine required statuses PASS, REVIEW / NOT_TESTED items) are preserved unchanged.",
+  "replaced_rule": {
+    "v2_rule": "half of max |C_prod - C_ind| / max |C_ind| over the singular 56 x 56 lag-space covariance, compared with the relative fitted-quantity tolerance",
+    "why_invalid": "The denominator is the single largest matrix element. Half of that number is not the relative standard-error difference: on the saved V2 matrices it understated the actual largest relative lag-SE difference in all nine models (ratios 0.30 to 0.91) and hid elementwise differences up to 4.7e-5 (PHASE3D6 review, section 3)."
+  },
+  "new_rule": {
+    "name": "worst-case relative standard-error difference over all nonzero linear contrasts",
+    "matrices": "the full-rank 3 x 3 covariance matrices of the cross-basis coefficients, in identical coordinates: V_candidate = the production (package) covariance as passed to the simulation, V_reference = the independent-route covariance; never the singular 56 x 56 lag covariance. Identical coordinates are verified from the saved evidence: the rotation between the two coefficient parameterisations must equal the identity within 1e-12 (simulation_diagnostic/dlm_sd_covariance_agreement.csv, rotation_max_deviation_from_identity); otherwise the check fails (not comparable).",
+    "definition": "Let lambda_j be the generalized eigenvalues of V_candidate v = lambda V_reference v. delta_SE = max_j |sqrt(lambda_j) - 1|. This equals sup over a != 0 of |sqrt((a' V_candidate a) / (a' V_reference a)) - 1|, i.e. the largest relative difference of the standard error of ANY linear combination of the coefficients (any lag-specific effect, any cumulative effect, any contrast).",
+    "computation": "Cholesky reduction and symmetric eigenvalue calculation in base R: V_reference_s = R'R (chol), M = R'^-1 V_candidate_s R^-1, lambda = eigen(symmetric part of M). delta_SE is also reported with the roles swapped (|1/sqrt(lambda_j) - 1|) for transparency; the primary value is the one above.",
+    "symmetric_part": "The standard error of any contrast depends only on the symmetric part of a covariance matrix (a'Va = a'((V + V')/2)a), so delta_SE is computed on the symmetric parts and this is exact for the quantity measured, not a repair. The asymmetry of each saved matrix is recorded (max |V - V'| / max |V| and the affine-invariant spectral norm) and flagged if it exceeds the SE tolerance, because the production simulation draws use the lower triangle of the matrix as saved. Production matrices and draws are not changed.",
+    "invalid_inputs": "Non-finite, non-square, dimension-incompatible or non-positive-definite matrices (Cholesky failure, non-positive generalized eigenvalue) FAIL. No jitter, no eigenvalue clipping, no silent repair.",
+    "tolerance": {
+      "continuous_outcomes": {
+        "value": 1e-07,
+        "source_file": "config/dlm_validation_protocol.json",
+        "source_field": "criteria.independent_route.fitted_quantities_rel"
+      },
+      "binary_outcome_at_accepted_epsilon": {
+        "value": 1e-06,
+        "source_file": "config/dlm_validation_protocol.json",
+        "source_field": "criteria.independent_route.binomial_fitted_quantities_rel_accepted_epsilon"
+      },
+      "note": "These are the existing relative standard-error tolerances declared in V1 (the independent-route fitted-quantity tolerances); the reference plan config/validation_plan_dlm.json declares only reference tolerance classes (dlm, exact, seeded) and no independent-route SE tolerance. The values are read from the V1 protocol at run time and recorded with their field names; they are not inferred from observed results and not loosened.",
+      "comparison": "delta_SE <= tolerance passes (the boundary passes)."
+    }
+  },
+  "retained_unchanged": [
+    "all direct lag-SE, pointwise-band, cumulative-SE and cumulative-band comparisons and their tolerances (V1 checks, carried forward as previously reviewed evidence)",
+    "the Monte Carlo rule (V1 criteria: seeded 5,000-draw value within 5% of the 100,000-draw value, spread across 20 seeds at most 0.2, identical band-exclusion counts; cross-implementation 5%), reported with actual discrepancies next to each threshold",
+    "all other V2 checks and statuses; the sign convention and covariance allowance of the orientation-aligned simulation check are unchanged"
+  ],
+  "inputs": {
+    "source": "aggregate files of a V2 run folder only (no participant data, no refitting): dlm_v2_covariance_matrices.csv, dlm_v2_metadata.json, RUN_MANIFEST.csv, dlm_v2_checks.csv, dlm_v2_exact_differences_visible.csv, simulation_diagnostic/dlm_sd_covariance_agreement.csv, simulation_diagnostic/dlm_sd_covariance_trace.csv, v1_component/dlm_verification_checks.csv, v1_component/dlm_mc_stability.csv, DLM_V2_STATUS.txt",
+    "if_missing": "the run reports exactly which files are missing and fails the input-provenance status; it never refits"
+  },
+  "carried_forward": "The nine required V2 statuses, the reported-separately statuses and the direct SE checks are carried forward from the V2 run and labelled 'previously reviewed evidence (PHASE3D6), not recomputed'. They are not re-asserted as new results.",
+  "statuses": {
+    "new": [
+      "EXECUTION_STATUS",
+      "INPUT_PROVENANCE_STATUS",
+      "COVARIANCE_RULE_V21_STATUS"
+    ],
+    "carried_forward_labelled": [
+      "V2 required statuses",
+      "MANUSCRIPT_CONCORDANCE_STATUS (REVIEW)",
+      "FIGURE_PROVENANCE_STATUS (NOT_TESTED)",
+      "DLNM_EQUALITY_STATUS (NOT_TESTED)",
+      "MONTE_CARLO_RULE (actual discrepancies and thresholds)"
+    ],
+    "adoption": "PENDING_REVIEW",
+    "rule": "NOT_TESTED is never PASS.",
+    "exit_codes": "0 every new status PASS and nothing carried forward is open; 3 every new status PASS while carried-forward items are REVIEW or NOT_TESTED (expected); 4 a new status FAILED; 1 execution failure; 2 invalid arguments"
+  },
+  "environment_metadata": "sessionInfo(), extSoftVersion(), La_version() and La_library() are captured where available. Where Windows R reports an empty BLAS or LAPACK library path the field is labelled UNAVAILABLE; the BLAS/LAPACK implementation is not inferred.",
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

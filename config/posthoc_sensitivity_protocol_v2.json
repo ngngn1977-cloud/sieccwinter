@@ -1,0 +1,1836 @@
+{
+  "protocol_name": "posthoc_sensitivity_protocol",
+  "protocol_version": "2",
+  "extends": {
+    "file": "posthoc_sensitivity_protocol_v1.json",
+    "sha256": "REDACTED_PUBLIC_BUILD",
+    "rule": "every version-1 item, rule, reference and value is kept unchanged; version 2 adds items 11-13 (steps 27-29) and the reference role gis_ims_v8_1_reference; amendment v2_4 (14 Oct 2026) adds item 14 (step 30, PH_AGE65)"
+  },
+  "status_of_this_document": "POST HOC protocol version 2 for labelled SENSITIVITY, POST_HOC and RECONSTRUCTION steps, declared 14 Oct 2026 (after the 30 July 2026 family lock): version 1 (13 Oct 2026) unchanged, plus three steps (PH_EXPOSURE_QA, PH_VIF_SUMMARY, PH_CALENDAR_SPLINE) specified in SPEC_ExposureQA_CalendarSpline_2026-10-14 on the author's instruction of 14 Oct 2026. It changes no estimator, inclusion or complete-case rule, seed, draw count, tolerance, multiplicity family, governing protocol or accepted result. None of these steps can change q90, q9, q9-nested or any accepted status. Amendment v2_4 (14 Oct 2026, later the same day, after the 30 July 2026 family lock) adds the SENSITIVITY step PH_AGE65 (section 7 of the same specification) under the same rules.",
+  "amendment_v2_4": {
+    "date": "2026-10-14",
+    "after_run": "run_20261014_152602_f912",
+    "change": "item 14 (step 30) PH_AGE65 (SENSITIVITY) added: the 90 representative M2-L cumulative models refitted without participants with Age < 65 (Age = 2026 minus birth year), same estimators and inference as the primary models, BH across the 90 tests (q90-age65)",
+    "reason": "author instruction of 14 Oct 2026 (SPEC_ExposureQA_CalendarSpline_2026-10-14, section 7 addendum); declared after the 30 July 2026 family lock; it changes no estimator, inclusion or complete-case rule of the primary analyses, seed, draw count, tolerance, multiplicity family or accepted result; q90, q9 and q9-nested are read-only for it"
+  },
+  "amendment_v2_3": {
+    "date": "2026-10-14",
+    "after_run": "run_20261014_134412_524b",
+    "change": "second amendment of the step-27 stored-precision criterion (author decision 14 Oct 2026): the condition equal after rounding both sides to 8 decimals is removed from EXPOSURE_SOURCE_IDENTITY_STORED_PRECISION_STATUS, which now requires all rows present, the same missing pattern and max |difference| <= 1e-8; the rounding-equality counts stay as informational columns and the strict 1e-9 line stays informational",
+    "reason": "the rule was ill-posed at rounding boundaries: two values closer than 1e-8 can round to different 8th decimals (TD 14, RH 9, rain 53 rows in that run, with no difference above 1e-8 and a maximum of about 5.05e-9)"
+  },
+  "amendment_v2_2": {
+    "date": "2026-10-14",
+    "change": "step 27: the declared post hoc criterion EXPOSURE_SOURCE_IDENTITY_STORED_PRECISION (8-decimal agreement, max |difference| <= 1e-8) governs the source-identity requirement; the strict 1e-9 result stays computed and reported as informational (author decision 14 Oct 2026; reason in items.exposure_qa.source_identity.stored_precision)"
+  },
+  "amendment_v2_1": {
+    "date": "2026-10-14",
+    "after_run": "run_20261014_124607_389c",
+    "change": "two station-level session files of the analysed run added to role gis_ims_v8_1_reference (stage A coordinate metadata, stage B observation retrieval); coordinate-valid, requested and returned stations are derived from them as the specification states; the source-identity table gains aggregate difference diagnostics (tolerance 1e-9 unchanged); record-only rows no longer count in the concordance status"
+  },
+  "author_decision_v2": {
+    "date": "2026-10-14",
+    "decision": "Record the v10 manuscript values of station coverage, distances, VIFs and the calendar-spline sensitivity as labelled post hoc steps; if a package value differs from an expected value the difference is reported and the code is not changed to match (the manuscript is corrected to the package value)."
+  },
+  "author_decision": {
+    "dates": [
+      "2026-10-12",
+      "2026-10-13"
+    ],
+    "decision": "Bring the manuscript/SI analyses that run_all did not run into the package as labelled post hoc steps (Option A), add an aggregate exposure export and the H3 nested constant-versus-varying-weight test; reimplement originals exactly where they exist, label reconstructions where they do not."
+  },
+  "primary_inference_effect": "NONE: the primary families (q90 cumulative, q9 final L01-L56 DLM global tests) and every accepted status are read-only for these steps.",
+  "status_values": "PASS / REVIEW / NOT_TESTED / FAIL, reported verbatim. NOT_APPLICABLE_SYNTHETIC_INPUT is used only for comparisons with study values when the input is the shipped synthetic CSV (demo); it is neutral and is never a pass of the comparison it replaces.",
+  "overall_rule": "A step is FAIL if any of its statuses is FAIL; otherwise REVIEW if any status is REVIEW or NOT_TESTED; otherwise PASS. Wrapper exit codes: 0 PASS, 3 REVIEW, 4 FAIL, 1 execution failure, 2 invalid arguments.",
+  "calendar_anchor": {
+    "assessment_day_0": "2026-01-29",
+    "meaning": "the study's first data-collection day; a calendar anchor only, declared as one constant. No date file is read.",
+    "interview_date_rule": "interview (L00) date of participant i = 2026-01-29 + assessment_day_i",
+    "lag_date_rule": "date of lag k for participant i = 2026-01-29 + assessment_day_i - k",
+    "used_for": [
+      "no-April restriction (interview month is April)",
+      "exposure date span",
+      "winter/spring classification of each lag day",
+      "early/late groups (assessment_day <= 54 is Early, i.e. interview on or before 2026-03-24; >= 55 is Late)",
+      "assessment-date labels of the archived date-cluster resampling (ISO date strings, as in the original code)"
+    ],
+    "equivalence_evidence": "assessment_day equals the number of days since the first assessment date (14 Sep 2026 audit check assessment_day_equals_days_from_first_date); the original code used assessment_date_iso, which this rule reproduces as a string."
+  },
+  "exposure_provenance": {
+    "ims": "Primary IMS exposures were assigned upstream from each participant's geocoded home address by three-nearest-station inverse-distance-squared weighting, with a minimum of two valid stations.",
+    "era5": "ERA5 / ERA5-HEAT exposures (air temperature, relative humidity, UTCI, MRT) were assigned upstream by bilinear interpolation.",
+    "upstream_only": "Retrieval (IMS API, Copernicus CDS), geocoding and interpolation were all done upstream. The package consumes only the resulting daily histories; it never reads, stores or outputs addresses or coordinates and it does not retrieve or interpolate."
+  },
+  "tolerances": "the existing named classes of config/sieccwinter_config.json (exact, cumulative, dlm); none is added or changed",
+  "reference_roles": {
+    "posthoc_v14_reference": "aggregate outputs of the frozen V1.4 full-profile run SIECC_FULL_20260801T125700 (models/)",
+    "archive_engine_reference": "aggregate outputs of the archive engine (stages 13-31, runs ANALYSIS_20260729T165755Z and TARGETED_20260730T050439Z; R 4.2 library; input: the premodel snapshot, not the locked CSV), accepted as the original by the author on 13 Oct 2026",
+    "core_reference": "the existing core reference bundle (validation_plan.json). Its files are not repeated in reference_files: SHA-256 and size come from the core_reference bundle of the input-identification declaration (project_inputs_declaration_v1.json; the grid is CONFIRMED_BY_FROZEN_SOURCE, byte-identical to the frozen V1.4 grid) and the record counts from validation_plan.json (fix of 13 Oct 2026 after run_20261013_165748_38af stopped with SIW_POSTHOC_REFERENCE_NOT_DECLARED)",
+    "gis_ims_v8_1_reference": "the GIS exposure run actually analysed (IMS toolkit V8.1 streaming run of 25 Jul 2026): participant-level daily IDW histories, spatial audit and plan QA, and station-level period coverage and raw 10-minute files (local only, never published, never staged or copied by the launcher); identified by SHA-256; each file carries a content tag",
+    "nearest_station_histories": "participant-level nearest-station daily histories (local only, never published); the declared export variants are identified by SHA-256; see item nearest_station"
+  },
+  "reference_files": [
+    {
+      "role": "posthoc_v14_reference",
+      "file": "selected_leave_out.csv",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "expected_records": 528,
+      "contains_identifiers": true,
+      "identifier_note": "column omitted holds participant codes and ISO dates; they are matched inside R and never written to any output",
+      "acceptance_evidence": "file of the frozen V1.4 full-profile run whose other outputs are the accepted frozen references of this package; hashed in place on 13 Oct 2026 (names and hashes only; contents not opened)"
+    },
+    {
+      "role": "posthoc_v14_reference",
+      "file": "primary_resampling_summary.csv",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "expected_records": 198,
+      "contains_identifiers": false,
+      "acceptance_evidence": "file of the frozen V1.4 full-profile run (source of the Batch C reference, which declares its 18 DLM rows out of Batch C scope); hashed in place on 13 Oct 2026"
+    },
+    {
+      "role": "archive_engine_reference",
+      "file": "OUTCOME_DISTRIBUTION_SUMMARY.csv",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "expected_records": 5,
+      "contains_identifiers": false,
+      "acceptance_evidence": "archive engine accepted as the original by the author on 13 Oct 2026; the workspace copy, the outputs copy and the run-stage copy have the same SHA-256 (hashed in place on 13 Oct 2026; contents not opened)"
+    },
+    {
+      "role": "archive_engine_reference",
+      "file": "SEASONAL_GEOGRAPHIC_CUMULATIVE_SENSITIVITY.csv",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "expected_records": 720,
+      "contains_identifiers": false,
+      "acceptance_evidence": "archive engine accepted as the original by the author on 13 Oct 2026; the workspace copy, the outputs copy and the run-stage copy have the same SHA-256 (hashed in place on 13 Oct 2026; contents not opened)"
+    },
+    {
+      "role": "archive_engine_reference",
+      "file": "WEATHER_SOURCE_AGREEMENT.csv",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "expected_records": 80,
+      "contains_identifiers": false,
+      "acceptance_evidence": "archive engine accepted as the original by the author on 13 Oct 2026; the workspace copy, the outputs copy and the run-stage copy have the same SHA-256 (hashed in place on 13 Oct 2026; contents not opened)"
+    },
+    {
+      "role": "archive_engine_reference",
+      "file": "EXPOSURE_DATE_LOCALITY_OVERLAP.csv",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "expected_records": 27,
+      "contains_identifiers": false,
+      "acceptance_evidence": "archive engine accepted as the original by the author on 13 Oct 2026; the workspace copy, the outputs copy and the run-stage copy have the same SHA-256 (hashed in place on 13 Oct 2026; contents not opened)"
+    },
+    {
+      "role": "archive_engine_reference",
+      "file": "INT_DUMMY_FIRTH_PROFILE_INFERENCE.csv",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "expected_records": 33,
+      "contains_identifiers": false,
+      "acceptance_evidence": "archive engine accepted as the original by the author on 13 Oct 2026; the workspace copy, the outputs copy and the run-stage copy have the same SHA-256 (hashed in place on 13 Oct 2026; contents not opened)"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "daily",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "participant-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "audit",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "participant-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "plan",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "participant-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "period_coverage",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "raw_10min",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "raw_10min",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "raw_10min",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "raw_10min",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "raw_10min",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "SHA-256 given in SPEC_ExposureQA_CalendarSpline_2026-10-14 section 1; copied and verified 14 Oct 2026"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "stage_a",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "author instruction 14 Oct 2026 after run_20261014_124607_389c; copied and verified 14 Oct 2026; contains station counts only (no participant field)"
+    },
+    {
+      "role": "gis_ims_v8_1_reference",
+      "file": "REDACTED_PUBLIC_BUILD",
+      "content": "stage_b",
+      "bytes": -1,
+      "sha256": "REDACTED_PUBLIC_BUILD",
+      "frozen_source": "REDACTED_PUBLIC_BUILD",
+      "level": "station-level",
+      "acceptance_evidence": "author instruction 14 Oct 2026 after run_20261014_124607_389c; copied and verified 14 Oct 2026; contains station counts and per-station fetch statuses only (no participant field)"
+    }
+  ],
+  "items": [
+    {
+      "id": "exposure_export",
+      "step": "EXPOSURE_EXPORT",
+      "label": "POST_HOC",
+      "order": 1,
+      "what": "aggregate exposure export: participant-days in L01-L56; UTCI stress-category counts and %; valid rainfall days and % rainy / dry / 0-1 mm; exposure date span; winter and spring mean UTCI and % no thermal stress; participants at the minimum UCLA score. Aggregates only.",
+      "definitions_source": "14 Sep 2026 audit, independent_calculations/winter_independent_python.py (declared here as post hoc definitions by the author, 13 Oct 2026); the minimum-UCLA count follows floor_count of archive stage 13 (src/r/13_descriptive_data_quality.R)",
+      "definitions": {
+        "participant_days": "number of participants x 56 (L01-L56)",
+        "utci_bands_degC": {
+          "reference": "Broede et al. 2012 categories",
+          "no_thermal_stress": "9 <= UTCI <= 26 (9 inclusive)",
+          "slight_cold_stress": "0 <= UTCI < 9",
+          "moderate_cold_stress": "-13 <= UTCI < 0",
+          "strong_cold_or_colder": "UTCI < -13",
+          "any_heat_stress": "UTCI > 26",
+          "denominator": "finite UTCI participant-days in L01-L56"
+        },
+        "rain_mm": {
+          "field": "IMS_IDW_RAIN_TOTAL L01-L56 (archival values; the one missing cell stays missing)",
+          "valid_day": "finite daily total",
+          "rainy": ">= 1 mm",
+          "dry": "= 0 mm",
+          "between_0_and_1": "> 0 and < 1 mm",
+          "denominator": "valid rainfall participant-days"
+        },
+        "season": {
+          "winter": "lag date <= 2026-02-28",
+          "spring": "lag date >= 2026-03-01",
+          "winter_last_date": "2026-02-28",
+          "spring_first_date": "2026-03-01",
+          "unit": "participant-day (each lag day classified by its own date)"
+        },
+        "date_span": "earliest and latest lag date over L01-L56 of all participants",
+        "minimum_ucla": "number of participants whose UCLA score equals the observed minimum (archive floor_count)"
+      },
+      "acceptance": [
+        {
+          "quantity": "participant_days_L01_L56",
+          "value": 3080,
+          "decimals": 0
+        },
+        {
+          "quantity": "utci_no_thermal_stress_days",
+          "value": 2551,
+          "decimals": 0
+        },
+        {
+          "quantity": "utci_slight_cold_stress_days",
+          "value": 500,
+          "decimals": 0
+        },
+        {
+          "quantity": "utci_moderate_cold_stress_days",
+          "value": 29,
+          "decimals": 0
+        },
+        {
+          "quantity": "rain_valid_days",
+          "value": 3079,
+          "decimals": 0
+        },
+        {
+          "quantity": "rain_rainy_ge1mm_percent",
+          "value": 26.4,
+          "decimals": 1
+        },
+        {
+          "quantity": "rain_dry_0mm_percent",
+          "value": 55.3,
+          "decimals": 1
+        },
+        {
+          "quantity": "rain_between_0_and_1mm_percent",
+          "value": 18.3,
+          "decimals": 1
+        },
+        {
+          "quantity": "winter_mean_utci",
+          "value": 11.33,
+          "decimals": 2
+        },
+        {
+          "quantity": "spring_mean_utci",
+          "value": 12.07,
+          "decimals": 2
+        },
+        {
+          "quantity": "winter_no_thermal_stress_percent",
+          "value": 77.9,
+          "decimals": 1
+        },
+        {
+          "quantity": "spring_no_thermal_stress_percent",
+          "value": 90.4,
+          "decimals": 1
+        },
+        {
+          "quantity": "ucla_participants_at_minimum",
+          "value": 25,
+          "decimals": 0
+        },
+        {
+          "quantity": "ucla_participants_nonmissing",
+          "value": 55,
+          "decimals": 0
+        }
+      ],
+      "acceptance_rule": "every listed quantity, rounded to the stated decimals, equals the manuscript value; otherwise FAIL",
+      "archive_comparison": {
+        "role": "archive_engine_reference",
+        "file": "OUTCOME_DISTRIBUTION_SUMMARY.csv",
+        "keys": [
+          "outcome"
+        ],
+        "outcomes": [
+          "UCLA_Lonliness_SCORE",
+          "Isolation_cont",
+          "Int_dummy",
+          "integration_score"
+        ],
+        "fields": [
+          "n",
+          "missing",
+          "mean",
+          "sd",
+          "median",
+          "iqr",
+          "minimum",
+          "maximum",
+          "floor_count",
+          "ceiling_count"
+        ],
+        "tolerance": "cumulative",
+        "required": false
+      }
+    },
+    {
+      "id": "deletion",
+      "step": "PH_DELETION",
+      "label": "SENSITIVITY",
+      "order": 2,
+      "what": "selected deletion refits: the six previously selected cumulative M2-L models x (55 participant + 33 assessment-date deletions) = 528 refits",
+      "original": "WINTER_SOURCE R/060_xy.R siecc_select_strong_xy (one model per outcome and domain: maximum |Spearman| for continuous outcomes, maximum |point-biserial r| for the binary outcome, first maximum in outcome-metric-window order); R/100_resampling.R siecc_resample_selected_models, siecc_leave_one_out and siecc_simple_model_coefficient (stats::lm / stats::glm binomial with default control on the complete cases of outcome, exposure and the M2_L covariates; date deletion removes one assessment date)",
+      "metric_domain": {
+        "UTCI": "thermal",
+        "MRT": "thermal",
+        "ERA5_air_temperature": "thermal",
+        "ERA5_relative_humidity": "moisture",
+        "IMS_temperature": "thermal",
+        "IMS_relative_humidity": "moisture",
+        "IMS_rainfall_total": "moisture",
+        "IMS_rainy_day_count_ge_1_mm": "moisture"
+      },
+      "expected_selection": [
+        {
+          "outcome": "UCLA_Lonliness_SCORE",
+          "metric": "MRT",
+          "window": 35
+        },
+        {
+          "outcome": "UCLA_Lonliness_SCORE",
+          "metric": "IMS_rainfall_total",
+          "window": 56
+        },
+        {
+          "outcome": "Isolation_cont",
+          "metric": "ERA5_air_temperature",
+          "window": 42
+        },
+        {
+          "outcome": "Isolation_cont",
+          "metric": "ERA5_relative_humidity",
+          "window": 49
+        },
+        {
+          "outcome": "Int_dummy",
+          "metric": "UTCI",
+          "window": 35
+        },
+        {
+          "outcome": "Int_dummy",
+          "metric": "IMS_rainfall_total",
+          "window": 21
+        }
+      ],
+      "reference": {
+        "role": "posthoc_v14_reference",
+        "file": "selected_leave_out.csv",
+        "keys": [
+          "outcome",
+          "metric",
+          "window",
+          "mode",
+          "omitted"
+        ],
+        "fields": [
+          "coefficient"
+        ],
+        "tolerance": "cumulative",
+        "expected_compared": 528
+      },
+      "reconstruction": "n, standard error, 95% interval and convergence of every deletion fit with the final cumulative estimator (HC3 with residual-df t for continuous outcomes; model-based Wald for the binary outcome), as described in SI Table S9",
+      "si_concordance": {
+        "source": "SI Table S9 (coefficient ranges, 3 decimals)",
+        "ranges": [
+          {
+            "outcome": "Int_dummy",
+            "metric": "IMS_rainfall_total",
+            "window": 21,
+            "participant": [
+              -0.027,
+              -0.006
+            ],
+            "date": [
+              -0.024,
+              -0.002
+            ]
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "UTCI",
+            "window": 35,
+            "participant": [
+              0.507,
+              0.986
+            ],
+            "date": [
+              0.283,
+              0.85
+            ]
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "ERA5_air_temperature",
+            "window": 42,
+            "participant": [
+              -0.194,
+              0.759
+            ],
+            "date": [
+              -0.712,
+              0.795
+            ]
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "ERA5_relative_humidity",
+            "window": 49,
+            "participant": [
+              -0.023,
+              0.158
+            ],
+            "date": [
+              -0.023,
+              0.227
+            ]
+          },
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "IMS_rainfall_total",
+            "window": 56,
+            "participant": [
+              0.004,
+              0.009
+            ],
+            "date": [
+              0.004,
+              0.009
+            ]
+          },
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "MRT",
+            "window": 35,
+            "participant": [
+              -0.224,
+              0.204
+            ],
+            "date": [
+              -0.533,
+              0.155
+            ]
+          }
+        ],
+        "statements": {
+          "participant_n": 54,
+          "date_n_range": [
+            51,
+            54
+          ],
+          "refits_converged": 528,
+          "all_intervals_include_zero": true
+        }
+      }
+    },
+    {
+      "id": "l59_bootstrap",
+      "step": "PH_L59_BOOTSTRAP",
+      "label": "SENSITIVITY",
+      "order": 3,
+      "what": "the 18 archived L01-L59 DLM cumulative-effect bootstrap rows: 9 representative M2-L DLMs x (participant 2,000; assessment-date cluster 1,000 resamples)",
+      "original": "WINTER_SOURCE R/100_resampling.R siecc_primary_resampling (DLM branch) and siecc_bootstrap_dlm_one; R/080_dlm.R siecc_fit_dlm (L01-L59, natural spline df 3, glm epsilon 1e-10, maxit 200, no simultaneous draws so no RNG use inside the fit); date clusters are assessment_date_iso groups in sorted order (split names); seed = config seed + 100 x target_index + (1 for the assessment-date scheme), target_index = 11 x block (the DLM target follows the ten cumulative windows of each outcome-metric block); percentile interval type 8 over successful replicates when at least 20 succeed",
+      "replicates": {
+        "participant": 2000,
+        "assessment_date": 1000
+      },
+      "reference": {
+        "role": "posthoc_v14_reference",
+        "file": "primary_resampling_summary.csv",
+        "row_filter": {
+          "target_type": "primary_DLM_cumulative_effect"
+        },
+        "keys": [
+          "outcome",
+          "metric",
+          "resampling_type"
+        ],
+        "fields": [
+          "replicates_requested",
+          "replicates_successful",
+          "estimate_median",
+          "ci_lower",
+          "ci_upper",
+          "positive_fraction",
+          "negative_fraction"
+        ],
+        "tolerance": "cumulative",
+        "expected_compared": 18
+      },
+      "si_concordance": {
+        "source": "SI Table S9 (3 decimals)",
+        "isolation_ims_rh": {
+          "participant_ci": [
+            -1.709,
+            -0.032
+          ],
+          "participant_successful": 2000,
+          "date_ci": [
+            -1.988,
+            0.067
+          ],
+          "date_successful": 1000
+        },
+        "participant_success_range": [
+          1980,
+          2000
+        ],
+        "date_success_range": [
+          974,
+          1000
+        ]
+      }
+    },
+    {
+      "id": "no_april",
+      "step": "PH_NO_APRIL",
+      "label": "SENSITIVITY",
+      "order": 4,
+      "what": "no-April restriction (participants interviewed in April removed; n=38) of the 90 primary M2-L cumulative models",
+      "original": "archive engine src/r/17_post_dlm_sensitivity_contrasts.R cumulative_sensitivity, variant NO_APRIL: exclude format(assessment_date_iso, '%m') == '04'; model.matrix of exposure + M2_L covariates after complete cases and droplevels; gaussian lm.fit with HC3 (siecc_hc3_primary), binomial glm.fit epsilon 1e-12 maxit 200 with model-based covariance; 95% interval and p from the normal approximation (1.96)",
+      "reference": {
+        "role": "archive_engine_reference",
+        "file": "SEASONAL_GEOGRAPHIC_CUMULATIVE_SENSITIVITY.csv",
+        "row_filter": {
+          "variant": "NO_APRIL"
+        },
+        "keys": [
+          "outcome",
+          "metric",
+          "window",
+          "variant"
+        ],
+        "window_from": "source_model_id (__W<window>__)",
+        "fields": [
+          "n",
+          "event_count",
+          "estimate",
+          "standard_error",
+          "ci_lower",
+          "ci_upper",
+          "p"
+        ],
+        "tolerance": "cumulative",
+        "expected_compared": 90
+      },
+      "si_concordance": {
+        "source": "SI Table S10 (no-April column, per one full-sample exposure SD, 2 decimals) and SI text",
+        "n": 38,
+        "events": 19,
+        "non_events": 19,
+        "minimum_p_90": 0.053,
+        "w56": [
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "UTCI",
+            "scale": "B",
+            "estimate": -0.61,
+            "ci": [
+              -1.38,
+              0.16
+            ]
+          },
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "IMS_relative_humidity",
+            "scale": "B",
+            "estimate": -0.23,
+            "ci": [
+              -0.93,
+              0.47
+            ]
+          },
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "scale": "B",
+            "estimate": 0.24,
+            "ci": [
+              -0.36,
+              0.84
+            ]
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "UTCI",
+            "scale": "B",
+            "estimate": -0.5,
+            "ci": [
+              -3.14,
+              2.15
+            ]
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "IMS_relative_humidity",
+            "scale": "B",
+            "estimate": -0.67,
+            "ci": [
+              -2.64,
+              1.3
+            ]
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "scale": "B",
+            "estimate": 0.51,
+            "ci": [
+              -1.46,
+              2.47
+            ]
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "UTCI",
+            "scale": "OR",
+            "estimate": 1.79,
+            "ci": [
+              0.26,
+              12.38
+            ]
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "IMS_relative_humidity",
+            "scale": "OR",
+            "estimate": 3.27,
+            "ci": [
+              0.3,
+              35.96
+            ]
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "scale": "OR",
+            "estimate": 0.46,
+            "ci": [
+              0.13,
+              1.65
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "source_agreement",
+      "step": "PH_SOURCE_AGREEMENT",
+      "label": "SENSITIVITY",
+      "order": 5,
+      "what": "ERA5-IMS source agreement: 2 pairs (temperature, RH) x 10 cumulative windows x (all + three localities) = 80 rows: n, Pearson, Spearman, mean and median bias (ERA5 minus IMS), RMSE, Lin concordance, Bland-Altman limits",
+      "original": "archive engine src/r/28_dlm_scenario_weather_assignment.R (source_agreement; the recovered file was written by this stage)",
+      "reference": {
+        "role": "archive_engine_reference",
+        "file": "WEATHER_SOURCE_AGREEMENT.csv",
+        "keys": [
+          "comparison",
+          "window_days",
+          "group"
+        ],
+        "fields": [
+          "n_pairwise",
+          "pearson",
+          "spearman",
+          "mean_bias_era5_minus_ims",
+          "median_bias_era5_minus_ims",
+          "rmse",
+          "lin_concordance_correlation",
+          "bland_altman_lower",
+          "bland_altman_upper"
+        ],
+        "tolerance": "cumulative",
+        "expected_compared": 80
+      },
+      "si_concordance": {
+        "source": "SI text (56-day means, 3 decimals)",
+        "w56": [
+          {
+            "comparison": "ERA5_vs_IMS_temperature",
+            "group": "ALL",
+            "n": 55,
+            "pearson": 0.374,
+            "bias": 0.559,
+            "rmse": 0.934
+          },
+          {
+            "comparison": "ERA5_vs_IMS_temperature",
+            "group": "Or Akiva and surroundings",
+            "n": 18,
+            "pearson": 0.819,
+            "bias": 0.185,
+            "rmse": 0.433
+          },
+          {
+            "comparison": "ERA5_vs_IMS_temperature",
+            "group": "Haifa and Krayot",
+            "n": 21,
+            "pearson": -0.155,
+            "bias": 1.289,
+            "rmse": 1.427
+          },
+          {
+            "comparison": "ERA5_vs_IMS_temperature",
+            "group": "Tamra and Nahariya",
+            "n": 16,
+            "pearson": 0.279,
+            "bias": 0.023,
+            "rmse": 0.34
+          },
+          {
+            "comparison": "ERA5_vs_IMS_relative_humidity",
+            "group": "ALL",
+            "n": 55,
+            "pearson": 0.455,
+            "bias": 0.139,
+            "rmse": 3.348
+          },
+          {
+            "comparison": "ERA5_vs_IMS_relative_humidity",
+            "group": "Or Akiva and surroundings",
+            "n": 18,
+            "pearson": 0.849,
+            "bias": -4.083,
+            "rmse": 4.271
+          },
+          {
+            "comparison": "ERA5_vs_IMS_relative_humidity",
+            "group": "Haifa and Krayot",
+            "n": 21,
+            "pearson": 0.772,
+            "bias": 3.096,
+            "rmse": 3.276
+          },
+          {
+            "comparison": "ERA5_vs_IMS_relative_humidity",
+            "group": "Tamra and Nahariya",
+            "n": 16,
+            "pearson": 0.36,
+            "bias": 1.006,
+            "rmse": 1.981
+          }
+        ]
+      }
+    },
+    {
+      "id": "exposure_residuals",
+      "step": "PH_EXPOSURE_RESIDUALS",
+      "label": "SENSITIVITY",
+      "order": 6,
+      "what": "exposure residual diagnostics: UTCI, IMS RH and rainy-day count at 7, 28 and 56 days regressed on assessment day, locality, or both (27 regressions): n, R2, residual SD, % variance remaining, residual SD as % of unadjusted SD, common-range fractions",
+      "original": "archive engine src/r/13_descriptive_data_quality.R (exposure_overlap: stats::lm on AssessmentDay (uncentred), Locality_3group, or both; common_range_fraction over EarlyLate and Locality_3group)",
+      "reference": {
+        "role": "archive_engine_reference",
+        "file": "EXPOSURE_DATE_LOCALITY_OVERLAP.csv",
+        "keys": [
+          "metric",
+          "window_days",
+          "adjustment_model"
+        ],
+        "fields": [
+          "n",
+          "r_squared",
+          "residual_exposure_sd",
+          "percent_variance_remaining",
+          "residual_sd_percent_of_unadjusted",
+          "early_late_common_range_fraction",
+          "locality_common_range_fraction"
+        ],
+        "categorical": [
+          "little_independent_contrast"
+        ],
+        "tolerance": "cumulative",
+        "expected_compared": 27
+      },
+      "si_concordance": {
+        "source": "SI text (56 days, assessment day plus locality)",
+        "w56": [
+          {
+            "metric": "UTCI",
+            "r_squared_percent": 82.84,
+            "residual_sd": 0.406
+          },
+          {
+            "metric": "IMS_relative_humidity",
+            "r_squared_percent": 66.09,
+            "residual_sd": 1.49
+          },
+          {
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "r_squared_percent": 47.25,
+            "residual_sd": 2.145
+          }
+        ]
+      }
+    },
+    {
+      "id": "profile_likelihood",
+      "step": "PH_PROFILE_LIKELIHOOD",
+      "label": "SENSITIVITY",
+      "order": 7,
+      "what": "penalized (Jeffreys/Firth) profile-likelihood intervals and 1-df penalized likelihood-ratio tests for the 30 representative M2-L cumulative integration models",
+      "original": "archive engine src/r/25_binary_small_sample_completion.R (fit_firth_optim: siecc_firth_logistic start (500 iterations, tolerance 1e-10) then optim BFGS maxit 3000 reltol 1e-11; constrained_profile_loglik: BFGS maxit 2000 reltol 1e-10 with the pivot parametrisation; profile_interval: chi-square(1) 0.95 drop, bracket step max(0.05, 1.25 SE) expanded by 1.75 up to 18 times, uniroot tol 1e-7 maxiter 100); base R only: logistf / brglm2 are NOT used or needed",
+      "reference": {
+        "role": "archive_engine_reference",
+        "file": "INT_DUMMY_FIRTH_PROFILE_INFERENCE.csv",
+        "row_filter": {
+          "model_class": "PRIMARY_CUMULATIVE"
+        },
+        "keys": [
+          "metric",
+          "window"
+        ],
+        "window_from": "window_or_lag_specification (cumulative window <window> days)",
+        "fields": [
+          "n",
+          "event_count",
+          "non_event_count",
+          "parameter_count",
+          "coefficient",
+          "penalised_information_standard_error",
+          "profile_ci_lower",
+          "profile_ci_upper",
+          "profile_lrt_statistic",
+          "profile_lrt_p"
+        ],
+        "categorical": [
+          "profile_status",
+          "status"
+        ],
+        "tolerance": "cumulative",
+        "expected_compared": 30
+      },
+      "si_concordance": {
+        "source": "SI text (3 decimals)",
+        "minimum_profile_p": 0.114,
+        "all_intervals_include_zero": true,
+        "w56": [
+          {
+            "metric": "UTCI",
+            "coefficient": 0.834,
+            "ci": [
+              -0.565,
+              2.476
+            ],
+            "p": 0.25
+          },
+          {
+            "metric": "IMS_relative_humidity",
+            "coefficient": 0.096,
+            "ci": [
+              -0.311,
+              0.523
+            ],
+            "p": 0.643
+          },
+          {
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "coefficient": 0.016,
+            "ci": [
+              -0.247,
+              0.286
+            ],
+            "p": 0.902
+          }
+        ]
+      }
+    },
+    {
+      "id": "early_late",
+      "step": "PH_EARLY_LATE",
+      "label": "RECONSTRUCTION",
+      "order": 8,
+      "what": "early/late seasonal analyses (SI Table S11): Panel A weather means and UTCI categories by group; Panel B M2-L subgroup fits and exposure-by-group interactions at 56 days with their q values",
+      "groups": "Early: assessment_day <= 54 (interview 29 Jan - 24 Mar 2026); Late: assessment_day >= 55",
+      "part_reproduction": {
+        "original": "archive engine src/r/17_post_dlm_sensitivity_contrasts.R variant EARLY_LATE_INTERACTION (exposure centred on the full sample, exposure_centred * EarlyLate + M2_L covariates; HC3 / model-based covariance; normal-approximation p)",
+        "reference": {
+          "role": "archive_engine_reference",
+          "file": "SEASONAL_GEOGRAPHIC_CUMULATIVE_SENSITIVITY.csv",
+          "row_filter": {
+            "variant": "EARLY_LATE_INTERACTION"
+          },
+          "keys": [
+            "outcome",
+            "metric",
+            "window",
+            "variant"
+          ],
+          "window_from": "source_model_id (__W<window>__)",
+          "fields": [
+            "n",
+            "event_count",
+            "estimate",
+            "standard_error",
+            "early_estimate",
+            "late_estimate",
+            "interaction_estimate",
+            "interaction_ci_lower",
+            "interaction_ci_upper",
+            "interaction_p",
+            "exposure_overlap"
+          ],
+          "tolerance": "cumulative",
+          "expected_compared": 90
+        }
+      },
+      "part_reconstruction": {
+        "status": "RECONSTRUCTION: no original implementation or output of the subgroup fits and q values was found (13 Oct 2026 search)",
+        "subgroup_model": "M2-L (the final cumulative estimator: HC3 with residual-df t for continuous outcomes; ordinary ML logistic with model-based Wald for the binary outcome) fitted within each group, for every representative outcome-metric-window (180 tests); the 56-day rows are the displayed 18",
+        "families": {
+          "si_q180_subgroup": "GOVERNING: BH across 180 subgroup tests (3 outcomes x 3 metrics x 10 windows x 2 groups) as stated in the SI Table S11 note",
+          "si_q90_interaction": "GOVERNING: BH across the 90 interaction tests (3 x 3 x 10) as stated in the SI Table S11 note",
+          "author_q18_subgroup": "INFORMATIONAL column only: BH across the 18 56-day subgroup tests",
+          "author_q9_interaction": "INFORMATIONAL column only: BH across the 9 56-day interaction tests"
+        },
+        "family_decision": {
+          "date": "2026-10-13",
+          "decision": "Author decision (13 Oct 2026, second message): the SI-declared families (180 subgroup, 90 interaction tests) govern; they produced the reported minima 0.778 and 0.602. The earlier 18/9 instruction was a mistake; the 18/9 values are kept only as informational columns."
+        },
+        "per_sd_scale": "common full-cohort SD of each 56-day exposure"
+      },
+      "si_concordance": {
+        "source": "SI Table S11 and SI text",
+        "minimum_subgroup_q": 0.778,
+        "minimum_interaction_q": 0.602,
+        "panel_a": {
+          "means": [
+            {
+              "metric": "UTCI",
+              "early_mean": 11.04,
+              "early_sd": 0.84,
+              "late_mean": 12.14,
+              "late_sd": 0.72
+            },
+            {
+              "metric": "IMS_relative_humidity",
+              "early_mean": 64.26,
+              "early_sd": 1.39,
+              "late_mean": 67.87,
+              "late_sd": 1.95
+            },
+            {
+              "metric": "IMS_rainy_day_count_ge_1_mm",
+              "early_mean": 14.27,
+              "early_sd": 2.86,
+              "late_mean": 15.28,
+              "late_sd": 2.84
+            }
+          ],
+          "utci_categories": {
+            "early": {
+              "no_thermal_stress": 1104,
+              "slight_cold_stress": 323,
+              "moderate_cold_stress": 29,
+              "strong_cold_or_colder": 0,
+              "any_heat_stress": 0
+            },
+            "late": {
+              "no_thermal_stress": 1447,
+              "slight_cold_stress": 177,
+              "moderate_cold_stress": 0,
+              "strong_cold_or_colder": 0,
+              "any_heat_stress": 0
+            }
+          },
+          "group_n": {
+            "early": 26,
+            "late": 29
+          },
+          "group_events": {
+            "early": 14,
+            "late": 14
+          },
+          "common_sd": {
+            "UTCI": 0.95,
+            "IMS_relative_humidity": 2.49,
+            "IMS_rainy_day_count_ge_1_mm": 2.87
+          }
+        },
+        "panel_b": [
+          {
+            "metric": "UTCI",
+            "outcome": "UCLA_Lonliness_SCORE",
+            "early": [
+              -1.51,
+              -4.63,
+              1.61
+            ],
+            "early_p": 0.324,
+            "early_q": 0.778,
+            "late": [
+              -0.41,
+              -1.71,
+              0.88
+            ],
+            "late_p": 0.514,
+            "late_q": 0.831,
+            "interaction_p": 0.988,
+            "interaction_q": 1
+          },
+          {
+            "metric": "UTCI",
+            "outcome": "Isolation_cont",
+            "early": [
+              2.33,
+              -5.29,
+              9.95
+            ],
+            "early_p": 0.529,
+            "early_q": 0.831,
+            "late": [
+              -1.03,
+              -4.43,
+              2.38
+            ],
+            "late_p": 0.538,
+            "late_q": 0.831,
+            "interaction_p": 0.674,
+            "interaction_q": 1
+          },
+          {
+            "metric": "UTCI",
+            "outcome": "Int_dummy",
+            "early": [
+              3.77,
+              0.05,
+              263.28
+            ],
+            "early_p": 0.54,
+            "early_q": 0.831,
+            "late": [
+              28.06,
+              1.36,
+              580.01
+            ],
+            "late_p": 0.031,
+            "late_q": 0.778,
+            "interaction_p": 0.562,
+            "interaction_q": 1
+          },
+          {
+            "metric": "IMS_relative_humidity",
+            "outcome": "UCLA_Lonliness_SCORE",
+            "early": [
+              -2.34,
+              -7.17,
+              2.49
+            ],
+            "early_p": 0.322,
+            "early_q": 0.778,
+            "late": [
+              -0.22,
+              -1.47,
+              1.04
+            ],
+            "late_p": 0.721,
+            "late_q": 0.92,
+            "interaction_p": 0.716,
+            "interaction_q": 1
+          },
+          {
+            "metric": "IMS_relative_humidity",
+            "outcome": "Isolation_cont",
+            "early": [
+              1.78,
+              -10.11,
+              13.67
+            ],
+            "early_p": 0.757,
+            "early_q": 0.927,
+            "late": [
+              -2.06,
+              -6.05,
+              1.94
+            ],
+            "late_p": 0.296,
+            "late_q": 0.778,
+            "interaction_p": 0.965,
+            "interaction_q": 1
+          },
+          {
+            "metric": "IMS_relative_humidity",
+            "outcome": "Int_dummy",
+            "early": [
+              128.72,
+              0.3,
+              55089.39
+            ],
+            "early_p": 0.116,
+            "early_q": 0.778,
+            "late": [
+              1.82,
+              0.28,
+              11.97
+            ],
+            "late_p": 0.533,
+            "late_q": 0.831,
+            "interaction_p": 0.472,
+            "interaction_q": 1
+          },
+          {
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "outcome": "UCLA_Lonliness_SCORE",
+            "early": [
+              0.51,
+              -1.37,
+              2.4
+            ],
+            "early_p": 0.575,
+            "early_q": 0.848,
+            "late": [
+              -0.44,
+              -1.18,
+              0.3
+            ],
+            "late_p": 0.228,
+            "late_q": 0.778,
+            "interaction_p": 0.303,
+            "interaction_q": 1
+          },
+          {
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "outcome": "Isolation_cont",
+            "early": [
+              3.13,
+              -1.02,
+              7.28
+            ],
+            "early_p": 0.131,
+            "early_q": 0.778,
+            "late": [
+              -0.49,
+              -2.58,
+              1.59
+            ],
+            "late_p": 0.628,
+            "late_q": 0.878,
+            "interaction_p": 0.667,
+            "interaction_q": 1
+          },
+          {
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "outcome": "Int_dummy",
+            "early": [
+              0.04,
+              0.0018,
+              1.12
+            ],
+            "early_p": 0.059,
+            "early_q": 0.778,
+            "late": [
+              4.28,
+              0.63,
+              29.04
+            ],
+            "late_p": 0.136,
+            "late_q": 0.778,
+            "interaction_p": 0.026,
+            "interaction_q": 0.602
+          }
+        ],
+        "estimate_rule": "B (continuous) or OR (binary) per one common full-cohort SD: rounded to the decimals shown (2; 4 for 0.0018); p and q to 3 decimals"
+      }
+    },
+    {
+      "id": "h3_nested",
+      "step": "PH_H3_NESTED",
+      "label": "POST_HOC",
+      "order": 9,
+      "declared": "2026-10-13 (after the 30 July 2026 family lock)",
+      "what": "H3 nested test: do the lag weights differ from constant weights? Reduced (constant weights) = outcome ~ W56 cumulative exposure + M2-L, exactly the archived CUM ... W56 ... M2_L model (rain: the archived rainy-day count; the test is invariant to dividing by 56). Full (varying weights) = the existing final L01-L56 DLM (linear exposure x natural cubic spline over lag, 3 df, internal knot 28.5, boundary knots 1 and 56, lag basis with intercept). The reduced model is the full model with a flat lag curve: 2 df.",
+      "pairs": "the nine representative pairs: 3 outcomes x (UTCI, IMS RH, rainy-day indicator), same 55 participants and the same M2-L covariates in both models",
+      "nesting_checks": {
+        "column_space": "the reduced design lies in the column space of the full design (rank of the joint matrix equals the full rank; residual of the reduced exposure column on the full design <= 1e-8 relative)",
+        "constrained_fit": "constraining the two non-constant lag directions to zero (lag coefficients proportional to the vector a with B a = 1) reproduces the reduced fit (fitted values, RSS / deviance; relative 1e-8)",
+        "df_difference": 2,
+        "on_failure": "STOP: the nesting status is FAIL and no test is reported"
+      },
+      "tests": {
+        "continuous": "nested model-based F test with 2 and n - p_full (45) df; plus an HC3 Wald test of the 2 extra coefficients (Wald W = (C b)'(C V_HC3 C')^-1 (C b) with C spanning the complement of a; p from F(2, n - p_full) applied to W/2, the lm convention)",
+        "binary": "likelihood-ratio test with 2 df from the two ML deviances (both fits with the final DLM glm control, epsilon 1e-12, maxit 200)"
+      },
+      "multiplicity": {
+        "family": "q9-nested",
+        "rule": "BH across the nine model-based p values; distinct from the existing global q9"
+      },
+      "output_columns": [
+        "outcome",
+        "metric",
+        "n",
+        "df_full",
+        "df_reduced",
+        "stat_type",
+        "statistic",
+        "df_num",
+        "df_den_or_NA",
+        "p_model_based",
+        "p_HC3_wald",
+        "q9_nested",
+        "reduced_model_code",
+        "dlm_model_code",
+        "run_id",
+        "source_fingerprint"
+      ],
+      "run_record": "H3_RUN_RECORD.json: protocol declaration (name, version, status line, SHA-256), timestamp, input SHA-256, run id, source fingerprint, nesting checks",
+      "acceptance": {
+        "reduced_coefficients": {
+          "role": "core_reference",
+          "file": "cumulative_regression_grid.csv",
+          "rule": "the reduced W56 M2-L exposure coefficient (archived cumulative glm control) equals the archived CUM W56 M2_L coefficient (tolerance class cumulative)"
+        },
+        "full_global_p": {
+          "role": "core_reference",
+          "file": "DLM_L01_L56_nine_representative_summary.csv",
+          "rule": "the full model global p equals the archived global p (tolerance class dlm)",
+          "table3_order": [
+            "UCLA_Lonliness_SCORE|UTCI",
+            "UCLA_Lonliness_SCORE|IMS_relative_humidity",
+            "UCLA_Lonliness_SCORE|IMS_rainy_day_count_ge_1_mm",
+            "Isolation_cont|UTCI",
+            "Isolation_cont|IMS_relative_humidity",
+            "Isolation_cont|IMS_rainy_day_count_ge_1_mm",
+            "Int_dummy|UTCI",
+            "Int_dummy|IMS_relative_humidity",
+            "Int_dummy|IMS_rainy_day_count_ge_1_mm"
+          ],
+          "table3_p": [
+            0.437,
+            0.479,
+            0.319,
+            0.766,
+            0.284,
+            0.804,
+            0.39,
+            0.176,
+            0.377
+          ],
+          "table3_rule": "rounded to 3 decimals; the order assumed is outcome (configuration order) x representative metric (configuration order), the order of the final DLM output"
+        },
+        "finite": "no non-finite value in the nine rows"
+      },
+      "manuscript_use": "The manuscript cites only the recorded CSV; no number is typed by hand."
+    },
+    {
+      "id": "nearest_station",
+      "step": "PH_NEAREST_STATION",
+      "label": "POST_HOC",
+      "order": 10,
+      "what": "nearest-station check (6 Oct 2026 analysis, reimplemented in R): 120 IMS cumulative M2-L fits (3 outcomes x 4 IMS metrics x 10 windows) and the six L01-L56 M2-L DLMs (3 outcomes x IMS RH and rainy-day indicator); the single nearest eligible station replaces IDW for the same addresses; UTCI remains ERA5",
+      "status": "author decision 13 Oct 2026: FEATURE_ID is participant_code (ID-only check: 55/55 FEATURE_ID values equal participant_code; 0/55 for every GIS object or row ID); the raw nearest exports are read directly, with declared column aliases; no helper file and no join",
+      "provenance": "IMS primary exposures: upstream three-nearest-station inverse-distance-squared weighting from each geocoded home address, at least two valid stations. This check: the single nearest eligible station for the same addresses replaces IDW (upstream). ERA5 / ERA5-HEAT (UTCI) unchanged (bilinear interpolation upstream). The package reads only the resulting daily histories; never addresses or coordinates.",
+      "input": {
+        "role": "nearest_station_histories",
+        "kind": "participant-level, local only, never published; a declared variant is identified by SHA-256 (below); a file that is not a declared variant is identified by its header line only and its provenance is REVIEW",
+        "layout": "one long CSV: participant_code, LOCAL_DATE or JERUSALEM_LOCAL_DATE (ISO date), TD_MEAN, RH_MEAN, RAIN_TOTAL, RAIN_DAYS1; one row per participant and local date; other columns are ignored",
+        "column_aliases": {
+          "participant_code": [
+            "participant_code",
+            "FEATURE_ID"
+          ],
+          "date": [
+            "LOCAL_DATE",
+            "JERUSALEM_LOCAL_DATE"
+          ]
+        },
+        "alias_rule": "the first alias present is used; FEATURE_ID is the participant ID field of the upstream IMS exposure tool, which was participant_code",
+        "date_rule": "the first 10 characters must be an ISO date (YYYY-MM-DD) in every non-blank row, otherwise the step stops",
+        "lag_rule": "lag k of participant i = the row dated 2026-01-29 + assessment_day_i - k (calendar anchor)",
+        "cumulative_rule": "IMS cumulative fields rebuilt from the substituted daily histories with the declared rule (available-day means; sums)"
+      },
+      "variants": [
+        {
+          "id": "jul19",
+          "label": "IMS nearest-station export of 19 Jul 2026 (date column JERUSALEM_LOCAL_DATE)",
+          "file": "REDACTED_PUBLIC_BUILD",
+          "bytes": -1,
+          "sha256": "REDACTED_PUBLIC_BUILD",
+          "date_column": "JERUSALEM_LOCAL_DATE"
+        },
+        {
+          "id": "jul25",
+          "label": "IMS nearest-station export of 25 Jul 2026 (date column LOCAL_DATE)",
+          "file": "REDACTED_PUBLIC_BUILD",
+          "bytes": -1,
+          "sha256": "REDACTED_PUBLIC_BUILD",
+          "date_column": "LOCAL_DATE"
+        }
+      ],
+      "variant_rule": "author decision 13 Oct 2026: which export the 6 Oct 2026 analysis used is not recorded, so every declared variant present is run separately with the same code. NEAREST_SI_CONCORDANCE_STATUS is PASS when at least one variant reproduces every SI S9/S10 value and the reproducing variant(s) are named; otherwise REVIEW, with the differences in nearest_station_variant_differences.csv. Values are compared in aggregate only.",
+      "si_concordance": {
+        "source": "SI Tables S9 (DLM rows, 3 decimals) and S10 (W56 per primary exposure SD, 2 decimals)",
+        "dlm": [
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "IMS_relative_humidity",
+            "sum": -0.123,
+            "ci": [
+              -0.318,
+              0.073
+            ],
+            "global_p": 0.321
+          },
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "sum": -0.505,
+            "ci": [
+              -7.845,
+              6.834
+            ],
+            "global_p": 0.142
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "IMS_relative_humidity",
+            "sum": -0.527,
+            "ci": [
+              -1.089,
+              0.035
+            ],
+            "global_p": 0.341
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "sum": -8.885,
+            "ci": [
+              -26.751,
+              8.981
+            ],
+            "global_p": 0.649
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "IMS_relative_humidity",
+            "sum": 0.141,
+            "ci": [
+              -0.257,
+              0.538
+            ],
+            "global_p": 0.113
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "sum": 3.772,
+            "ci": [
+              -10.814,
+              18.359
+            ],
+            "global_p": 0.871
+          }
+        ],
+        "w56": [
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "IMS_relative_humidity",
+            "scale": "B",
+            "estimate": -0.19,
+            "ci": [
+              -0.6,
+              0.22
+            ]
+          },
+          {
+            "outcome": "UCLA_Lonliness_SCORE",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "scale": "B",
+            "estimate": 0.11,
+            "ci": [
+              -0.29,
+              0.5
+            ]
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "IMS_relative_humidity",
+            "scale": "B",
+            "estimate": -1.03,
+            "ci": [
+              -2.32,
+              0.26
+            ]
+          },
+          {
+            "outcome": "Isolation_cont",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "scale": "B",
+            "estimate": -0.25,
+            "ci": [
+              -1.16,
+              0.65
+            ]
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "IMS_relative_humidity",
+            "scale": "OR",
+            "estimate": 1.61,
+            "ci": [
+              0.64,
+              4.04
+            ]
+          },
+          {
+            "outcome": "Int_dummy",
+            "metric": "IMS_rainy_day_count_ge_1_mm",
+            "scale": "OR",
+            "estimate": 1.12,
+            "ci": [
+              0.57,
+              2.2
+            ]
+          }
+        ],
+        "statements": {
+          "cumulative_converged": 120,
+          "integration_heuristic_flags": 6,
+          "dlm_n": 55,
+          "dlm_global_p_range": [
+            0.113,
+            0.871
+          ]
+        }
+      }
+    },
+    {
+      "id": "exposure_qa",
+      "step": "PH_EXPOSURE_QA",
+      "label": "RECONSTRUCTION",
+      "order": 11,
+      "declared": "2026-10-14 (after the 30 July 2026 family lock)",
+      "what": "exposure QA of the analysed IMS run (toolkit V8.1 streaming run of 25 Jul 2026): required source identity with the canonical CSV; daily station coverage of the three assigned stations per participant-day (TD, RH on the TD stations, rainfall); interpolated-value support (TD_VALID, RH_VALID); assigned-station distances; station pool (requested, returned, eligible); summaries by locality group (record only)",
+      "spec": "SPEC_ExposureQA_CalendarSpline_2026-10-14.md sections 1-2 (independent scripts stncov.py, nscheck3.py)",
+      "input": {
+        "role": "gis_ims_v8_1_reference",
+        "kind": "participant-level and station-level, local only, never published; the launcher passes the identified files (no staging or copy); only the columns named below are read",
+        "columns": {
+          "daily": [
+            "FEATURE_ID",
+            "METHOD",
+            "LOCAL_DATE",
+            "TD_MEAN",
+            "RH_MEAN",
+            "RAIN_TOTAL",
+            "TD_VALID",
+            "RH_VALID"
+          ],
+          "audit": [
+            "FEATURE_ID",
+            "VARIABLE",
+            "METHOD",
+            "STATION_ID",
+            "DISTANCE_M",
+            "PERIOD_COVERAGE_PCT",
+            "PLAN_INCLUDED"
+          ],
+          "plan": [
+            "FEATURE_ID",
+            "VARIABLE",
+            "METHOD",
+            "AVAILABLE_STATIONS"
+          ],
+          "period_coverage": [
+            "STATION_ID",
+            "VARIABLE_CODE",
+            "valid_count",
+            "coverage_pct"
+          ],
+          "raw_10min": [
+            "station_id",
+            "JERUSALEM_LOCAL_DATE",
+            "TD_C",
+            "RH_PCT",
+            "RAIN_MM"
+          ],
+          "stage_a": [
+            "details.coordinate_valid_stations",
+            "details.download_station_ids",
+            "details.metadata_candidate_union"
+          ],
+          "stage_b": [
+            "details.completed_stations",
+            "details.fetch_status"
+          ]
+        },
+        "id_rule": "FEATURE_ID is participant_code (author decision 13 Oct 2026)"
+      },
+      "participant_days": "55 participants x L01-L56; date of lag L = 2026-01-29 + assessment_day - L (calendar anchor); 3,080 rows",
+      "source_identity": {
+        "rule": "daily IDW TD_MEAN, RH_MEAN and RAIN_TOTAL of the run equal the canonical IMS_IDW_TD_MEAN_Lxx, IMS_IDW_RH_MEAN_Lxx and IMS_IDW_RAIN_TOTAL_Lxx on every analysed participant-day (absolute 1e-9), every participant-day is present in the run and the missing-value pattern is identical",
+        "status": "superseded as the governing status by stored_precision (author decision 14 Oct 2026); computed and reported as EXPOSURE_SOURCE_IDENTITY_STRICT_1E9 (informational, kept for the record; never relaxed or hidden)",
+        "stored_precision": {
+          "declared": "2026-10-14, post hoc, author decision after run_20261014_124607_389c",
+          "reason": "one source stores the daily values to 8 decimals; the observed maximum difference was about 5e-9 (TD 5.04e-9, RH 5.05e-9, rain 4.94e-9), so the strict 1e-9 rule cannot hold for correctly stored values",
+          "rule": "for TD, RH and rainfall: every analysed participant-day present, the same missing-value pattern, and max |difference| <= 1e-8 (one unit in the 8th decimal) (as amended by amendment_v2_3; the 8-decimal rounding-equality counts are reported as informational columns)",
+          "rule_as_first_declared": "every analysed participant-day present, the same missing-value pattern, every both-finite participant-day equal after rounding both sides to 8 decimals, and max |difference| <= 1e-8",
+          "status": "EXPOSURE_SOURCE_IDENTITY_STORED_PRECISION_STATUS: required; governs the identity requirement of step 27"
+        }
+      },
+      "assigned_stations": "rows of the spatial audit with METHOD = IDW and PLAN_INCLUDED = 1 for the analysed participants; VARIABLE TD (also used for RH) and rainfall; three stations per participant and variable",
+      "rules": {
+        "coverage_threshold": 0.8,
+        "dst_day": "2026-03-27",
+        "expected_10min": 144,
+        "expected_10min_dst": 138,
+        "one_minute_rain_stations": [
+          "312",
+          "315",
+          "317",
+          "318",
+          "320"
+        ],
+        "expected_1min": 1440,
+        "expected_1min_dst": 1380,
+        "coverage_rule": "per participant-day and assigned station: non-missing values (TD_C for TD, RH_PCT for RH, RAIN_MM for rainfall) in the raw 10-minute files for that station and JERUSALEM_LOCAL_DATE / expected intervals (144 per local day, 138 on the 23-hour DST day 2026-03-27; rainfall of the five 1-minute stations 1,440, or 1,380 on 2026-03-27); a station covers the day if the fraction is >= 0.80"
+      },
+      "station_pool_rule": "coordinate-valid stations = details.coordinate_valid_stations of the stage A coordinate metadata; requested = details.download_station_ids of stage A (cross-checked with the number of stations in the stage B fetch_status); returned = details.completed_stations of stage B; eligible = stations with period coverage >= 80 % per variable, and AVAILABLE_STATIONS of the plan file. The period-coverage-file counts of requested / returned stations are kept as record-only rows. A station file with any participant-level field stops the step",
+      "tolerance": "counts exact; km to 0.1 (1 decimal); percentages to 0.1; rows marked record only are shown but do not count in EXPOSURE_QA_SI_CONCORDANCE_STATUS",
+      "expected": {
+        "participant_days": 3080,
+        "identity_both_finite": [
+          3080,
+          3080,
+          3079
+        ],
+        "td_3": 2881,
+        "td_2": 199,
+        "td_share_3_pct": 93.5,
+        "rh_3": 2881,
+        "rh_2": 199,
+        "rain_3": 2591,
+        "rain_2": 476,
+        "rain_1": 13,
+        "rain_share_3_pct": 84.1,
+        "min_td_valid": 133,
+        "min_td_valid_dst": 138,
+        "td_assigned_rows": 165,
+        "td_km_min": 0.5,
+        "td_km_max": 15.3,
+        "td_nearest_median": 4.9,
+        "td_nearest_min": 0.5,
+        "td_nearest_max": 9.2,
+        "td_farthest_median": 12.5,
+        "rain_km_min": 0.5,
+        "rain_km_max": 13.3,
+        "td_distinct": 16,
+        "rain_distinct": 16,
+        "min_period_coverage_pct": 88,
+        "stations_requested": 39,
+        "stations_returned": 37,
+        "eligible_td_rh": 20,
+        "eligible_rain": 26,
+        "coordinate_valid_stations": 188
+      },
+      "statuses": "INPUT_PROVENANCE_STATUS (every declared file identified by SHA-256 and size); EXPOSURE_SOURCE_IDENTITY_STORED_PRECISION_STATUS (required; governs the identity requirement); EXPOSURE_SOURCE_IDENTITY_STRICT_1E9 reported in POSTHOC_STATUS.txt as informational (kept for the record); EXPOSURE_QA_COMPUTATION_STATUS (three assigned stations per participant and variable; every participant-day present); EXPOSURE_QA_SI_CONCORDANCE_STATUS (PASS if every derivable expected value agrees, otherwise REVIEW with the differences)",
+      "outputs": [
+        "exposure_source_identity.csv",
+        "exposure_qa_station_coverage.csv",
+        "exposure_qa_interpolation_support.csv",
+        "exposure_qa_distances.csv",
+        "exposure_qa_station_pool.csv",
+        "exposure_qa_variable_labels.csv",
+        "exposure_qa_si_concordance.csv"
+      ]
+    },
+    {
+      "id": "vif_summary",
+      "step": "PH_VIF_SUMMARY",
+      "label": "RECONSTRUCTION",
+      "order": 12,
+      "declared": "2026-10-14 (after the 30 July 2026 family lock)",
+      "what": "VIF summary of the M2-L cumulative models: per model the maximum VIF (Batch A siecc_max_vif: diagonal of the inverse correlation matrix of the non-intercept design columns; scale-free) and every per-column VIF (exposure, assessment day, locality dummies, sex, age, economic status) with the term attaining the maximum; (a) the 90 representative models, (b) all 240 M2-L fits",
+      "spec": "SPEC_ExposureQA_CalendarSpline_2026-10-14.md section 3",
+      "input": "the canonical CSV with the Batch A design (same samples as siw_cumulative_diagnostics, the function behind Batch A cumulative_diagnostics.csv); equality of every maximum VIF with that function is a required check",
+      "tolerance": "2 decimals",
+      "expected": {
+        "models_all": 240,
+        "models_representative": 90,
+        "representative_range": [
+          1.72,
+          6.94
+        ],
+        "utci_metric": "UTCI",
+        "utci_windows": [
+          35,
+          42,
+          49,
+          56
+        ],
+        "utci_max_vif": [
+          4.09,
+          6.2,
+          6.94,
+          6.05
+        ],
+        "utci_term": "exposure",
+        "rh_metric": "IMS_relative_humidity",
+        "rh_largest": 3.97,
+        "rh_largest_window": 49,
+        "rainy_metric": "IMS_rainy_day_count_ge_1_mm",
+        "rainy_largest": 3.06,
+        "rainy_largest_window": 28,
+        "all_range": [
+          1.7,
+          10.71
+        ],
+        "overall_metric": "MRT",
+        "overall_window": 42,
+        "overall_term": "assessment_day"
+      },
+      "statuses": "VIF_COMPUTATION_STATUS (240 models, 90 representative, finite, equal to the Batch A maximum VIF to 1e-10); VIF_SI_CONCORDANCE_STATUS",
+      "outputs": [
+        "vif_per_model_m2l.csv",
+        "vif_per_column_m2l.csv",
+        "vif_computation_checks.csv",
+        "vif_si_concordance.csv"
+      ]
+    },
+    {
+      "id": "calendar_spline",
+      "step": "PH_CALENDAR_SPLINE",
+      "label": "SENSITIVITY",
+      "order": 13,
+      "declared": "2026-10-14 (after the 30 July 2026 family lock)",
+      "what": "the 90 representative M2-L cumulative models refitted with splines::ns(assessment_day, df = k), k = 2 and 3 (default knots: interior at quantiles, boundary at the range of the model's complete-case sample), replacing the linear centred assessment-day term; every other M2-L covariate kept",
+      "spec": "SPEC_ExposureQA_CalendarSpline_2026-10-14.md section 4",
+      "df": [
+        2,
+        3
+      ],
+      "estimator": "the archive stage-17 estimator (variants DATE_NS_DF2 / DATE_NS_DF3): continuous outcomes OLS with HC3 standard errors, p from t on the residual df (primary convention; the archive's normal-reference p is kept in column p); high integration maximum-likelihood logistic, glm epsilon 1e-12, maxit 200 (as the final models), model-based Wald normal p",
+      "multiplicity": {
+        "families": [
+          "q90-calspline-df2",
+          "q90-calspline-df3"
+        ],
+        "rule": "BH across the 90 tests within each df (p_primary); distinct from q90, which is unchanged"
+      },
+      "reference": {
+        "role": "archive_engine_reference",
+        "file": "SEASONAL_GEOGRAPHIC_CUMULATIVE_SENSITIVITY.csv",
+        "variants": [
+          "DATE_NS_DF2",
+          "DATE_NS_DF3"
+        ],
+        "keys": [
+          "outcome",
+          "metric",
+          "window",
+          "variant"
+        ],
+        "window_from": "source_model_id (__W<window>__)",
+        "expected_per_variant": 90,
+        "acceptance": {
+          "estimate_abs": 1e-10,
+          "standard_error_abs": 1e-09,
+          "p_abs": 1e-09
+        },
+        "acceptance_rule": "exposure coefficients equal the reference to 1e-10, HC3 / model-based standard errors to 1e-9, normal-reference p to 1e-9 (absolute)"
+      },
+      "expected": {
+        "df2": {
+          "fits_completed": 90,
+          "residual_df": 46,
+          "nominal_p_lt_05": 1,
+          "smallest_p": 0.0125,
+          "smallest_p_model": {
+            "outcome": "Int_dummy",
+            "metric": "IMS_relative_humidity",
+            "window": 28
+          },
+          "minimum_q90": 0.936
+        },
+        "df3": {
+          "fits_completed": 90,
+          "residual_df": 45,
+          "nominal_p_lt_05": 2,
+          "smallest_p": 0.0145,
+          "smallest_p_model": {
+            "outcome": "Int_dummy",
+            "metric": "IMS_relative_humidity",
+            "window": 28
+          },
+          "minimum_q90": 0.702
+        }
+      },
+      "statuses": "INPUT_PROVENANCE_STATUS; CALENDAR_SPLINE_REPRODUCTION_STATUS (the reference rows); CALENDAR_SPLINE_VERIFICATION_STATUS (independent stats::lm / stats::glm refit); CALENDAR_SPLINE_SI_CONCORDANCE_STATUS",
+      "outputs": [
+        "calendar_spline_cumulative_180.csv",
+        "calendar_spline_independent_verification.csv",
+        "calendar_spline_reference_comparison_summary.csv",
+        "calendar_spline_reference_comparison_detail.csv",
+        "calendar_spline_si_concordance.csv"
+      ]
+    },
+    {
+      "id": "age65",
+      "step": "PH_AGE65",
+      "label": "SENSITIVITY",
+      "order": 14,
+      "declared": "2026-10-14 (amendment v2_4, after the 30 July 2026 family lock)",
+      "what": "the 90 representative M2-L cumulative models refitted without participants with Age < 65 (Age = 2026 minus birth year as recorded in the canonical CSV); every M2-L covariate and every estimator kept",
+      "spec": "SPEC_ExposureQA_CalendarSpline_2026-10-14.md section 7",
+      "rule": {
+        "minimum_age": 65,
+        "keep": "Age >= 65 (participants with a missing Age cannot enter any M2-L model)"
+      },
+      "estimator": "the archive stage-17 estimator (variant AGE65): continuous outcomes OLS with HC3 standard errors, p from t on the residual df (primary convention); high integration maximum-likelihood logistic, glm epsilon 1e-12, maxit 200 (as the final models), model-based Wald normal p",
+      "multiplicity": {
+        "families": [
+          "q90-age65"
+        ],
+        "rule": "BH across the 90 tests (p_primary); distinct from q90, which is unchanged"
+      },
+      "reference": "none: no archived result exists; the package result is compared with the values below (SI concordance) and with an independent stats::lm / stats::glm refit",
+      "expected": {
+        "n": 51,
+        "events": 26,
+        "nominal_p_lt_05": 0,
+        "smallest_p": 0.071,
+        "smallest_p_model": {
+          "outcome": "Int_dummy",
+          "metric": "UTCI",
+          "window": 42
+        },
+        "minimum_q90": 0.969
+      },
+      "expected_source": "independent check Exposure_QA_reconciliation_2026-10-14/age65.py (reproduces the package full-sample p values within 9e-8); if the package differs, the difference is reported and the code is not changed",
+      "statuses": "AGE65_COMPUTATION_STATUS (90 fits completed, finite p); AGE65_VERIFICATION_STATUS (independent refit, 1e-6); AGE65_SI_CONCORDANCE_STATUS",
+      "outputs": [
+        "age65_cumulative_90.csv",
+        "age65_independent_verification.csv",
+        "age65_sample.csv",
+        "age65_si_concordance.csv"
+      ]
+    }
+  ],
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

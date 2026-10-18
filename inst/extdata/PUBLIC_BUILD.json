@@ -1,0 +1,7 @@
+{
+  "public_build": true,
+  "built": "2026-10-15",
+  "redacted_declarations": ["anomaly_history_validation_protocol.json", "anomaly_history_validation_protocol_v2.json", "archived_dlm_validation_protocol.json", "bootstrap_protocol.json", "cold_burden_validation_protocol.json", "daily_layer_validation_protocol.json", "dlm_validation_protocol.json", "dlm_validation_protocol_v2.json", "dlm_validation_protocol_v2_1.json", "posthoc_sensitivity_protocol_v1.json", "posthoc_sensitivity_protocol_v2.json"],
+  "removed": ["config/private_local.json", "config/project_inputs_declaration_v1.json", "inst/extdata/project_inputs_declaration_v1.json", "tests/testthat/private_constants.json"],
+  "note": "The full declarations, the input declaration, the local configuration and the test constants are held in the private validation kit (local only)."
+}

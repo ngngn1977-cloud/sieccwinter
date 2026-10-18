@@ -1,0 +1,10 @@
+citHeader("To cite sieccwinter in publications, use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "sieccwinter: Reproducible Winter Weather and Social-Outcome Analysis for the SIECC Study",
+  author = person("Nahum M.", "Gabinet"),
+  year = "2026",
+  note = "R package version 1.0.0. DOI to be added after the Zenodo release.",
+  url = "https://github.com/ngngn1977-cloud/sieccwinter"
+)

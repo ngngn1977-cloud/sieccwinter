@@ -1,0 +1,32 @@
+Package: sieccwinter
+Type: Package
+Title: Reproducible Winter Weather and Social-Outcome Analysis for the SIECC Study
+Version: 1.0.0
+Authors@R: person("Nahum M.", "Gabinet", role = c("aut", "cre", "cph"), email = "ngabinet@campus.haifa.ac.il",
+    comment = c(ORCID = "0000-0001-5861-1507"))
+Description: A clean, documented implementation of the SIECC Winter analytical workflow:
+    cumulative-window regressions (seven model tiers, HC3 inference for continuous outcomes,
+    logistic regression for high integration), the final L01-L56 distributed-lag models
+    (linear exposure, natural cubic spline across lag with 3 df, nested-F and likelihood-ratio
+    global tests, pointwise and simultaneous bands), Benjamini-Hochberg families, input
+    validation and comparison with frozen aggregate reference outputs. The package contains
+    no study data; a fully synthetic data set is provided for workflow demonstration only.
+    Suggested packages are used only for optional cross-checks and tests.
+License: MIT + file LICENSE
+URL: https://github.com/ngngn1977-cloud/sieccwinter
+BugReports: https://github.com/ngngn1977-cloud/sieccwinter/issues
+Encoding: UTF-8
+Depends: R (>= 4.4.0)
+Imports:
+    MASS (>= 7.3-64),
+    splines,
+    stats,
+    tools,
+    utils,
+    jsonlite (>= 2.0.0)
+Suggests:
+    testthat (>= 3.2.0),
+    numDeriv,
+    dlnm (>= 2.4.7),
+    foreign,
+    tcltk

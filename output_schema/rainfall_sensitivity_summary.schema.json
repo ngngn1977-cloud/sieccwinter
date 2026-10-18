@@ -1,0 +1,68 @@
+{
+  "name": "rainfall_sensitivity_summary",
+  "file": "rainfall_sensitivity_summary.csv",
+  "primary_key": ["result_id", "analysis"],
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "result_id",
+      "type": "string"
+    },
+    {
+      "name": "outcome",
+      "type": "string"
+    },
+    {
+      "name": "metric",
+      "type": "string"
+    },
+    {
+      "name": "model_tier",
+      "type": "string"
+    },
+    {
+      "name": "analysis",
+      "type": "string"
+    },
+    {
+      "name": "window_or_lag",
+      "type": "integer"
+    },
+    {
+      "name": "n_primary",
+      "type": "number"
+    },
+    {
+      "name": "n_sensitivity",
+      "type": "number"
+    },
+    {
+      "name": "effect_primary",
+      "type": "number"
+    },
+    {
+      "name": "effect_sensitivity",
+      "type": "number"
+    },
+    {
+      "name": "p_primary",
+      "type": "number"
+    },
+    {
+      "name": "p_sensitivity",
+      "type": "number"
+    },
+    {
+      "name": "q_primary",
+      "type": "number"
+    },
+    {
+      "name": "q_sensitivity",
+      "type": "number"
+    },
+    {
+      "name": "note",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "_comment": "TEMPLATE of the private local configuration. Copy to config/private_local.json (git-ignored) and fill in; the study data and its declarations are available from the author on request. Without config/private_local.json the package runs on the shipped synthetic data and on any other CSV labelled NOT_THE_ACCEPTED_INPUT; validation against the study references is NOT_TESTED.",
+  "accepted_input_sha256": "<SHA-256 of the accepted canonical study CSV>",
+  "privacy_denylist": {
+    "account_names": ["<local account name>"],
+    "emails": ["<e-mail domain that must not appear in public files>"],
+    "allowed_maintainer_email": "<the maintainer address allowed in DESCRIPTION and README.md>",
+    "allowed_email_files": ["DESCRIPTION", "README.md"],
+    "machine_folders": ["<private folder name>"],
+    "private_data_names": ["<private data-file name>"],
+    "participant_code_patterns": ["<regular expression of the participant-code format>"]
+  }
+}

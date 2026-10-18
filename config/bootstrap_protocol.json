@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "batch": "C",
+  "description": "REDACTED_PUBLIC_BUILD",
+  "scope": {
+    "targets": "90 M2-L cumulative models: 3 outcomes x 3 representative metrics (UTCI, IMS relative humidity, IMS rainy-day count) x 10 windows",
+    "schemes": [
+      "participant",
+      "assessment_date"
+    ],
+    "combinations": 180,
+    "replicates_requested": 2000,
+    "excluded": "the 18 DLM cumulative-effect bootstrap rows of the 198-row frozen file (window_or_lag = 59, i.e. the archived L01-L59 horizon; participant 2000 and assessment-date 1000 resamples) and every final L01-L56 simultaneous band: outside this batch (declared NOT_TESTED in the reference bundle)"
+  },
+  "original_rules_preserved": {
+    "rng": "Mersenne-Twister, Inversion, Rejection (R 4.4.3 defaults; set.seed(seed) at the start of every target and scheme)",
+    "seed": "config seed 20260729 + target_index * 100 + (1 for the assessment-date scheme)",
+    "target_index": "increments by 1 for every (outcome, representative metric, window) in the order outcome, metric, window; and by one more after the ten windows of each outcome-metric block (the legacy DLM target), so the 90 cumulative targets use indices 1-10, 12-21, 23-32, 34-43, ...",
+    "participant_sample": "sample.int(n, n, replace = TRUE) over all 55 rows, once per replicate in replicate order",
+    "cluster_sample": "groups <- unique(as.character(date label)) in order of first appearance; sampled <- sample(groups, length(groups), replace = TRUE); rows = concatenation, in sampled order, of the original row indices of each sampled date (every participant of each sampled occurrence is retained, repeated dates repeat their participants); the date label is assessment_day (one-to-one with the calendar date; the draw sequence depends only on first-appearance order)",
+    "refit": "M2-L covariates (Sex, Age, AssessmentDay_centered [not recomputed], Locality_3group, Econ_STS); complete cases of the resampled rows; levels absent from the resample dropped; fewer than length(covariates) + 4 complete cases gives a failed refit; OLS (lm) for the continuous outcomes, ML logistic (glm, binomial, default control epsilon 1e-8, maxit 25) for high integration; reported quantity = the RAW coefficient of the exposure (per exposure unit; log odds for the binary outcome; not per SD)",
+    "failure_rules": "a refit is successful iff its exposure coefficient is finite; errors, aliased exposure and non-finite values are failures; failed samples are NOT redrawn; glm non-convergence is recorded but the coefficient is kept (as in the original)",
+    "summary": "median of the successful estimates; 95% percentile interval = stats::quantile(successful, c(0.025, 0.975), type = 8) when at least 20 refits succeeded, otherwise missing; positive_fraction and negative_fraction among successful estimates; interval_excludes_null = both limits finite and (lower > 0 or upper < 0)"
+  },
+  "implementation": {
+    "fit_engine": "stats::lm.fit / stats::glm.fit on the design matrix built directly from the resampled rows (identical column space and order as the original formula interface), instead of lm()/glm() with model.frame; bitwise-identical estimates are expected and tested on identical resamples",
+    "parallelism": "none (single process): deterministic by construction; worker-count equivalence therefore not applicable",
+    "resumption": "target-level checkpoints (one file per outcome-metric-window-scheme) written atomically in the run folder; reused only if the signature (input hash, configuration hash, protocol hash, source fingerprint, replicates, seed) is unchanged"
+  },
+  "mathematical_verification": {
+    "legacy_style_refit_replicates": [
+      1,
+      2,
+      3,
+      1000,
+      1999,
+      2000
+    ],
+    "legacy_style_refit_relative_tolerance": 1e-12,
+    "quantile_relative_tolerance": 1e-12,
+    "point_estimate_relative_tolerance": 1e-09,
+    "sampling_uniformity_max_abs_z": 5,
+    "determinism_targets_recomputed": 2,
+    "note": "checks: sampling invariants on every replicate (participant: length n and valid indices; cluster: every sampled occurrence retains all its participants in sampled order) and selection uniformity; legacy-style refits (lm/glm with model.frame) on identical resamples; independent type-8 quantile and median; independent seed/target-index formula; recomputation of two targets; conservation of attempted = successful + failed; the full-sample fit equals the validated cumulative M2-L estimate"
+  },
+  "scientific_validity": {
+    "note": "Descriptive flags, reported separately from legacy agreement and never used to alter, redraw or replace any result.",
+    "min_success_fraction": 0.95,
+    "max_glm_nonconverged_fraction": 0.01,
+    "bootstrap_sd_to_reference_se_ratio_range": [
+      0.5,
+      2
+    ],
+    "interval_should_contain_primary_estimate": true
+  }
+}

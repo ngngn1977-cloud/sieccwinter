@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "description": "Declared comparison plan used by the validator. A reference marked required MUST be present, complete and fully compared; otherwise the validation FAILS. Material marked required = false is explicitly out of scope and is reported NOT_TESTED (never PASS).",
+  "references": [
+    {
+      "name": "cumulative",
+      "required": true,
+      "scope": "publication: cumulative grid, raw windows 1-56 d (A primary 90, B shared 1,200, C V1.4 additional 480)",
+      "expected_records_by_file": { "cumulative_regression_grid.csv": 1680, "MASTER_CUMULATIVE_ALL_MODELS_1200.csv": 1200, "MASTER_CUMULATIVE_PRIMARY_90.csv": 90 },
+      "required_columns": ["n", "parameter_count", "residual_df", "coefficient", "model_based_se", "robust_hc3_se", "ci_lower", "ci_upper", "nominal_p", "odds_ratio_raw", "lr_p", "model_f_p", "r_squared", "q10", "q80", "q90"]
+    },
+    {
+      "name": "dlm_final_L01_L56",
+      "required": true,
+      "scope": "publication: nine final M2-L DLMs, L01-L56",
+      "expected_records_by_file": { "DLM_L01_L56_nine_representative_summary.csv": 9 },
+      "required_columns": ["n", "global_statistic", "global_df1", "global_p", "q9", "cumulative_effect", "cumulative_se", "cumulative_ci_lower", "cumulative_ci_upper"]
+    },
+    {
+      "name": "dlm_archived_L01_L59",
+      "required": false,
+      "scope": "OUT OF SCOPE for the final L01-L56 decision: archived L01-L59 validation material (a different specification)",
+      "expected_records_by_file": { "fixed_DLM_summary.csv": 168, "MASTER_DLM_ALL_M2_24.csv": 24, "MASTER_DLM_ALL_MODELS_120.csv": 120 },
+      "required_columns": ["n", "global_statistic", "global_df1", "global_p", "cumulative_effect", "cumulative_se"]
+    }
+  ]
+}

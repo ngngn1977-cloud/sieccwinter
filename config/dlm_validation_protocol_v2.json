@@ -1,0 +1,202 @@
+{
+  "version": "2.0.0-candidate",
+  "tool": "Phase 3D validation protocol V2 (candidate): separation of production reproduction, deterministic agreement, orientation-aligned simulation agreement and native-orientation Monte Carlo agreement",
+  "status_of_this_document": "CANDIDATE. Declared before any V2 study run. V2 is a REVISION introduced AFTER the orientation investigation; it does not replace, edit or re-grade V1. The V1 protocol (config/dlm_validation_protocol.json, hash REDACTED_PUBLIC_BUILD), the V1 reference plan (config/validation_plan_dlm.json, hash REDACTED_PUBLIC_BUILD), the simulation-diagnostic protocol (config/dlm_simulation_diagnostic_protocol.json, hash REDACTED_PUBLIC_BUILD), all V1 reports and the recorded statuses of dlmvalidate_20261002_163715_0c0b (REFERENCE_COMPARISON = FAIL, SIMULTANEOUS_EXACT_SEEDED = FAIL) are preserved unchanged.",
+  "introduced_after": {
+    "reason": "V1 required exact seeded agreement (1e-9) of simultaneous critical values between implementations. The manual V1 run showed that this requirement fails for reasons that are not errors of fitting, covariance or sampling.",
+    "evidence": [
+      {
+        "report": "reports/PHASE3D2_MANUAL_DLM_VALIDATION_REVIEW.md",
+        "finding": "reference comparison FAIL (4 critical values, 0.09% to 0.42%) and exact-seeded FAIL (3 cross-implementation checks); fitted quantities, p values, q9, peaks and band conclusions unaffected"
+      },
+      {
+        "report": "reports/PHASE3D3_SIMULATION_DIAGNOSTIC_BUILD_REPORT.md",
+        "finding": "diagnostic built with declared methods and allowance before execution"
+      },
+      {
+        "report": "reports/PHASE3D4_MANUAL_SIMULATION_DIAGNOSTIC_REVIEW.md",
+        "finding": "run dlmsimdiag_20261002_174941_1241: production replica bitwise (18/18); all factors reconstruct; all six production cross-route discrepancies explained by the sign of 4 of 27 eigenvectors (lag-space cosine -1); aligned agreement 1e-7 or better in 18/18; all four reference mismatches reproduced by a sign pattern of the production factor (compatible, not proof of the historical engine's behaviour)"
+      }
+    ],
+    "what_V2_does_not_claim": [
+      "that V1 was wrong or that its FAIL statuses are cancelled (they remain recorded as FAIL under the V1 criteria)",
+      "exact reproduction of the historical (legacy) engine's simulation",
+      "validity of a reference value because some sign pattern reproduces it"
+    ]
+  },
+  "unchanged_numbers": "No numerical tolerance and no Monte Carlo criterion is loosened or changed. V2 reads every number from the V1 protocol (config/dlm_validation_protocol.json): fitted-quantity tolerances 1e-8 abs + 1e-7 rel (binary at the accepted epsilon 1e-6 + 1e-6, tight-epsilon check 1e-8 + 1e-7), existing named tolerance sets of the configuration, Monte Carlo stability (20 alternative seeds, 100,000-draw value, seeded value within 5% of it, spread at most 0.2, identical band-exclusion counts), cross-implementation Monte Carlo bound 5% with identical exclusion counts, and the declared covariance allowance of the diagnostic protocol. The tests assert this equality.",
+  "four_checks": {
+    "A_production_reproduction": {
+      "question": "Does unchanged code on the same data and configuration with the same RNG settings reproduce the accepted fits and the production simulation?",
+      "required_evidence": "accepted-run tables (9 summaries, 504 lag rows, 504 cumulative rows) equal within the existing exact class (1e-12); the diagnostic's replica of the production draws and critical values bitwise equal for all nine models at 5,000 and 10,000 draws; RNG metadata recorded",
+      "failure_means": "fitting, data, configuration or sampling reproduction failure",
+      "not_tested_when": "no accepted run supplied"
+    },
+    "B_deterministic_agreement": {
+      "question": "Do the independent route and the package agree on everything that does not involve random draws?",
+      "required_evidence": "lag basis; coefficients (lag effects); lag SEs; pointwise bands; cumulative effects, SEs and bands; peak lags; global statistics and p values; q9 (BH of the independent p values equals the package q9); the band formula with the package critical value and the band-exclusion counts; binary models also at epsilon 1e-14; lag-space covariance on the standard-deviation scale",
+      "tolerances": "existing V1 fitted-quantity tolerances; covariance is judged on the standard-deviation scale: half of the largest relative difference of the lag-space covariance (the first-order equivalent of a relative standard-deviation difference) must not exceed the existing relative fitted-quantity tolerance (1e-7; 1e-6 for binary models at the accepted epsilon); this restates the existing SE tolerance for a covariance matrix and adds no looser value",
+      "failure_means": "genuine fitting or covariance failure"
+    },
+    "C_orientation_aligned_simulation": {
+      "question": "With identical standard normals and a documented deterministic sign convention in lag space, do the two implementations produce the same simulated critical values?",
+      "sign_convention": "each eigenvector v of the coefficient covariance is oriented so that the component of B v (B = lag basis) with the largest absolute value is positive; B v is coordinate free, so both implementations apply the same convention",
+      "required_evidence": "identical standard normals (the independent clone's draws and the production draws are both reproduced bitwise from the same matrix); every factor reconstructs its covariance (1e-12); aligned-eigen critical values of the two routes agree within the declared covariance allowance max(1e-9, 10 x lag-space relative covariance difference x critical value) at 5,000 and 10,000 draws; every production cross-route difference beyond the allowance is explained (flipping the lag-space cosine -1 components of the independent factor reproduces the production value within the allowance)",
+      "failure_means": "sampling failure, covariance/factor reconstruction failure, or UNRESOLVED ORIENTATION (a difference that orientation does not explain, including components whose lag-space cosine is neither +1 nor -1)"
+    },
+    "D_native_orientation_monte_carlo_agreement": {
+      "question": "With each implementation's own eigenvector signs, are the simulated critical values Monte Carlo consistent and are the band conclusions stable?",
+      "criteria": "the V1 Monte Carlo stability criteria, unchanged (per model: seeded 5,000-draw value within 5% of the 100,000-draw value; spread across 20 alternative seeds at most 0.2; identical number of lags excluding zero for the seeded value, every alternative seed, the 100,000-draw value, the independent-route value and, at the audited draw count, the reference), plus the V1 cross-implementation class (EXACT or MC_CONSISTENT_NOT_EXACT within 5% with identical exclusion counts)",
+      "exact_differences": "remain visible in dlm_v2_exact_differences_visible.csv with their V1 band and orientation explanation; an exact difference is NOT the cross-implementation acceptance requirement",
+      "failure_means": "stability failure (including threshold sensitivity of a band conclusion)"
+    }
+  },
+  "reconstructed_reference": {
+    "evidence_class": "AUDITED_L56_RECONSTRUCTION (not an original deposited result)",
+    "deterministic_comparisons": "REFERENCE_DETERMINISTIC: estimates (n, global statistic, p, q9, cumulative effect, SE and interval, peak effect) at the existing dlm tolerance, and peak lag and band-exclusion counts exact: required, unchanged from V1",
+    "simulated_critical_values": "REFERENCE_SIMULATION_MC: the audited critical value at 10,000 draws is assessed with the declared Monte Carlo criterion (relative difference from the production value at 10,000 draws within 5%, band-exclusion counts identical) - not with the 1e-9 exact-seeded class",
+    "preserved": "the exact differences, their V1 class (EXACT / NEAR_EXACT / REALISATION_DIFFERENCE) and the orientation explanation (sign pattern of the production factor that reproduces the reference value) are saved for every model",
+    "limits": "a sign pattern that reproduces a reference value shows compatibility with an orientation variant of the same simulation; it is annotation only and is never the basis of validity and never evidence of the historical engine's behaviour"
+  },
+  "saved_aggregate_matrices": {
+    "files": [
+      "dlm_v2_covariance_matrices.csv (3 x 3 coefficient covariance, production and independent route, every model)",
+      "dlm_v2_eigen_orientation.csv (eigenvalues, lag-space sign of each native eigenvector, whether it satisfies the convention, cosine between the routes, flip flag)",
+      "dlm_v2_rng_metadata.csv and dlm_v2_environment.json (RNG kinds, seeds, draw counts, R version, BLAS/LAPACK versions, platform)"
+    ],
+    "content": "aggregate model-level quantities only; no participant-level values"
+  },
+  "check_crosswalk": [
+    {
+      "v1_check": "ACCEPTED_FIT_REPRODUCTION",
+      "v2_check": "A_production_reproduction (PRODUCTION_REPRODUCTION_STATUS)",
+      "change": "same criterion; the draw-level replica is added as evidence",
+      "rationale": "separates reproduction of the accepted code from cross-implementation checks",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "REFERENCE_COMPARISON (estimates, discrete, critical at 1e-9)",
+      "v2_check": "REFERENCE_DETERMINISTIC_STATUS + REFERENCE_SIMULATION_MC_STATUS",
+      "change": "split: deterministic references unchanged and required; the simulated critical value is assessed by the declared Monte Carlo criterion; exact differences stay visible",
+      "rationale": "the 1e-9 class tests orientation of a random-number realisation, not agreement of the analysis",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "LAG_BASIS_VERIFICATION",
+      "v2_check": "B_deterministic_agreement",
+      "change": "none",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "CURVE_VERIFICATION",
+      "v2_check": "B_deterministic_agreement",
+      "change": "none (lag effects, SEs, pointwise bands, global statistic and p)",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "CUMULATIVE_VERIFICATION",
+      "v2_check": "B_deterministic_agreement",
+      "change": "none",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "PEAK_LAG_VERIFICATION",
+      "v2_check": "B_deterministic_agreement",
+      "change": "none",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "CONVERGENCE_SENSITIVITY",
+      "v2_check": "B_deterministic_agreement",
+      "change": "none",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "(not separate in V1)",
+      "v2_check": "B_deterministic_agreement: covariance and q9 rows",
+      "change": "added explicit covariance (SD scale, existing tolerance) and q9 rows",
+      "rationale": "covariance and q9 were only checked indirectly",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "SIMULTANEOUS_EXACT_SEEDED: band formula and exclusion-count rows",
+      "v2_check": "B_deterministic_agreement",
+      "change": "moved: deterministic given a critical value",
+      "rationale": "no random draw is involved",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "SIMULTANEOUS_EXACT_SEEDED: critical-value exact rows (1e-9)",
+      "v2_check": "C_orientation_aligned_simulation (acceptance) and exact_differences_visible (record)",
+      "change": "acceptance moved to the orientation-aligned comparison within the declared covariance allowance; the exact differences stay visible",
+      "rationale": "the PHASE3D4 diagnostic showed these differences are the sign of 4 of 27 eigenvectors and vanish under a documented convention",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "SIMULTANEOUS_MC_STABILITY",
+      "v2_check": "D_native_orientation_monte_carlo_agreement",
+      "change": "none",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "MANUSCRIPT_CONCORDANCE",
+      "v2_check": "MANUSCRIPT_CONCORDANCE_STATUS (reported separately)",
+      "change": "none; not an acceptance requirement of A-E; 3.50 versus 3.55 remains REVIEW",
+      "rationale": "documents are not references",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "FIGURE_PROVENANCE",
+      "v2_check": "FIGURE_PROVENANCE_STATUS",
+      "change": "none; NOT_TESTED",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "DLNM_EQUALITY",
+      "v2_check": "DLNM_EQUALITY_STATUS",
+      "change": "none; NOT_TESTED while dlnm is not installed",
+      "rationale": "-",
+      "criteria_changed": false
+    },
+    {
+      "v1_check": "SOURCE_INTEGRITY, EXECUTION, INPUT_CHECKS",
+      "v2_check": "same",
+      "change": "none",
+      "rationale": "-",
+      "criteria_changed": false
+    }
+  ],
+  "statuses": {
+    "required": [
+      "EXECUTION_STATUS",
+      "INPUT_CHECK_STATUS",
+      "PRODUCTION_REPRODUCTION_STATUS",
+      "DETERMINISTIC_AGREEMENT_STATUS",
+      "ORIENTATION_ALIGNED_SIMULATION_STATUS",
+      "NATIVE_ORIENTATION_MC_STATUS",
+      "REFERENCE_DETERMINISTIC_STATUS",
+      "REFERENCE_SIMULATION_MC_STATUS",
+      "SOURCE_INTEGRITY_STATUS"
+    ],
+    "reported_separately": [
+      "MANUSCRIPT_CONCORDANCE_STATUS",
+      "FIGURE_PROVENANCE_STATUS",
+      "DLNM_EQUALITY_STATUS"
+    ],
+    "v1_record_lines": [
+      "V1_REFERENCE_COMPARISON_STATUS",
+      "V1_SIMULTANEOUS_EXACT_SEEDED_STATUS"
+    ],
+    "v1_record_note": "the nested V1 component is computed in this run with the unchanged V1 criteria and printed for the record; it does not decide V2 acceptance",
+    "rule": "NOT_TESTED is never PASS. A required status FAILS on any genuine fitting, covariance, sampling, unresolved-orientation or stability failure.",
+    "exit_codes": "0 every status PASS; 3 every required status PASS while a separately reported status is REVIEW or NOT_TESTED (documented); 4 a required status FAILED; 1 execution failure; 2 invalid arguments"
+  },
+  "public_build_note": "PUBLIC BUILD: every SHA-256, size and location of the accepted input and of the frozen references is replaced by REDACTED_PUBLIC_BUILD; the full declaration is held in the private validation kit."
+}

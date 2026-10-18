@@ -1,0 +1,71 @@
+{
+  "config_version": "1.0.0",
+  "seed": 20260729,
+  "rng": { "kind": "Mersenne-Twister", "normal_kind": "Inversion", "sample_kind": "Rejection" },
+  "outcomes": [
+    { "outcome": "UCLA_Lonliness_SCORE", "code": "UCLA", "label": "UCLA loneliness", "family": "gaussian" },
+    { "outcome": "Isolation_cont", "code": "ISOLATION", "label": "Objective isolation", "family": "gaussian" },
+    { "outcome": "Int_dummy", "code": "INT", "label": "High integration", "family": "binomial" }
+  ],
+  "metrics": [
+    { "metric": "UTCI", "code": "UTCI", "label": "UTCI", "cumulative_prefix": "UTCI_AVG_", "daily_prefix": "UTCI", "aggregation": "mean", "unit": "degC", "representative": true },
+    { "metric": "MRT", "code": "MRT", "label": "Mean radiant temperature", "cumulative_prefix": "MRT_AVG_", "daily_prefix": "MRT", "aggregation": "mean", "unit": "degC", "representative": false },
+    { "metric": "ERA5_air_temperature", "code": "ERA5_TEMP", "label": "ERA5 air temperature", "cumulative_prefix": "AIR_TEMP_AVG_", "daily_prefix": "T2M", "aggregation": "mean", "unit": "degC", "representative": false },
+    { "metric": "ERA5_relative_humidity", "code": "ERA5_RH", "label": "ERA5 relative humidity", "cumulative_prefix": "HUMIDITY_AVG_", "daily_prefix": "RH", "aggregation": "mean", "unit": "percent", "representative": false },
+    { "metric": "IMS_temperature", "code": "IMS_TEMP", "label": "IMS temperature", "cumulative_prefix": "IMS_TEMP_IDW_AVG_", "daily_prefix": "IMS_IDW_TD_MEAN", "aggregation": "mean", "unit": "degC", "representative": false },
+    { "metric": "IMS_relative_humidity", "code": "IMS_RH", "label": "IMS relative humidity", "cumulative_prefix": "IMS_RH_IDW_AVG_", "daily_prefix": "IMS_IDW_RH_MEAN", "aggregation": "mean", "unit": "percent", "representative": true },
+    { "metric": "IMS_rainfall_total", "code": "IMS_RAIN", "label": "IMS rainfall total", "cumulative_prefix": "IMS_RAIN_IDW_TOTAL_", "daily_prefix": "IMS_IDW_RAIN_TOTAL", "aggregation": "sum", "unit": "mm", "representative": false },
+    { "metric": "IMS_rainy_day_count_ge_1_mm", "code": "IMS_RAINDAYS", "label": "IMS rainy-day count", "cumulative_prefix": "IMS_RAIN_DAYS_GE1MM_IDW_", "daily_prefix": "IMS_IDW_RAIN_DAYS1", "aggregation": "sum", "unit": "days", "representative": true }
+  ],
+  "windows": [1, 3, 7, 14, 21, 28, 35, 42, 49, 56],
+  "tiers": {
+    "M0": [],
+    "M1": ["Sex", "Age", "AssessmentDay_centered"],
+    "M2_L": ["Sex", "Age", "AssessmentDay_centered", "Locality_3group", "Econ_STS"],
+    "M2_E": ["Sex", "Age", "AssessmentDay_centered", "Ethnicity", "Econ_STS"],
+    "M2_EL": ["Sex", "Age", "AssessmentDay_centered", "Locality_3group", "Ethnicity", "Econ_STS"],
+    "M3": ["Sex", "Age", "AssessmentDay_centered", "Locality_3group", "Econ_STS", "PSQI", "Subjective_Health", "Memory", "Memory_Changed", "Subjective_Wellbeing"],
+    "M4_CC": ["Sex", "Age", "AssessmentDay_centered", "Locality_3group", "Econ_STS", "PSQI", "Memory_assess", "chronic_domain_count", "Outdoor_Mobility", "PedestLength_km"]
+  },
+  "tier_order": ["M0", "M1", "M2_L", "M2_E", "M2_EL", "M3", "M4_CC"],
+  "primary_tier": "M2_L",
+  "coding": {
+    "locality_levels": ["Haifa and Krayot", "Or Akiva and surroundings", "Tamra and Nahariya"],
+    "locality_codes": [1, 2, 3],
+    "note": "Level labels are retained exactly as used in the authoritative analysis."
+  },
+  "dlm": {
+    "final": { "lag_start": 1, "lag_end": 56, "lag_df": 3, "tier": "M2_L", "draws": 5000, "confidence": 0.95, "quantile_type": 8, "glm_epsilon": 1e-12, "glm_maxit": 200, "band_method": "MVN_max_abs_t_from_lag_basis_covariance", "mvn_method": "MASS_mvrnorm", "seed_rule": "seed + 100*metric_index + outcome_index" },
+    "archived": { "lag_end": 59, "lag_df": 3, "tier": "M2_L", "draws": 10000, "sensitivity_lag_ends": [35, 45, 59], "sensitivity_lag_dfs": [2, 3, 4], "note": "Archived L01-L59 programme; validation only, never mixed with the final L01-L56 analysis." }
+  },
+  "glm": { "cumulative_epsilon": 1e-8, "cumulative_maxit": 25 },
+  "families": {
+    "q10": "M2_L cumulative: 10 windows within one outcome x metric",
+    "q80": "M2_L cumulative: 8 metrics x 10 windows within one outcome",
+    "q90": "M2_L cumulative: 3 outcomes x 3 representative metrics x 10 windows",
+    "q9": "final L01-L56 DLM global tests: 3 outcomes x 3 representative metrics",
+    "q24": "archived L01-L59 M2-L global tests: 3 outcomes x 8 metrics",
+    "q216": "archived lag-length x lag-df sensitivity: 24 outcome-metric pairs x 9 specifications"
+  },
+  "tolerances": {
+    "exact_abs": 1e-12, "exact_rel": 1e-12,
+    "cumulative_abs": 1e-7, "cumulative_rel": 1e-6,
+    "dlm_abs": 2e-6, "dlm_rel": 1e-4,
+    "band_mc_note": "Simultaneous critical values are exactly reproducible only with the same draw count, seed rule and R RNG settings."
+  },
+  "validation": {
+    "references": [
+      { "name": "cumulative", "files": ["cumulative_regression_grid.csv", "MASTER_CUMULATIVE_ALL_MODELS_1200.csv", "MASTER_CUMULATIVE_PRIMARY_90.csv"], "keys": ["outcome", "metric", "window_or_lag", "model_tier"], "result": "cumulative_results.csv", "tolerance": "cumulative" },
+      { "name": "dlm_final_L01_L56", "files": ["DLM_L01_L56_nine_representative_summary.csv"], "keys": ["outcome", "metric", "model_tier"], "result": "dlm_final_summary.csv", "tolerance": "dlm" },
+      { "name": "dlm_archived_L01_L59", "files": ["fixed_DLM_summary.csv", "MASTER_DLM_ALL_MODELS_120.csv", "MASTER_DLM_ALL_M2_24.csv"], "keys": ["outcome", "metric", "model_tier"], "result": "archived_dlm_summary.csv", "tolerance": "dlm" }
+    ],
+    "dlm_column_aliases": {
+      "cumulative_effect": ["cumulative_effect", "overall_cumulative_effect"],
+      "cumulative_se": ["cumulative_se", "overall_cumulative_se"],
+      "cumulative_ci_lower": ["cumulative_ci_lower", "overall_cumulative_ci_lower"],
+      "cumulative_ci_upper": ["cumulative_ci_upper", "overall_cumulative_ci_upper"],
+      "peak_lag": ["peak_lag", "lag_of_maximum_absolute_estimated_coefficient"],
+      "global_df1": ["global_df1", "global_df"]
+    }
+  }
+}

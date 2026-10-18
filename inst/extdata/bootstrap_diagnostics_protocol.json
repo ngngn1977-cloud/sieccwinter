@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "tool": "bootstrap checkpoint audit (Phase 3C.2): diagnostic only",
+  "declared": "Thresholds and definitions below are declared BEFORE the tool is run on the study checkpoints and are fixed; the tool reports against them and never adjusts them. The diagnostics describe the saved bootstrap estimates; they do not change, replace or filter any original result, flag, interval or criterion. Existing Batch C flag definitions (config/bootstrap_protocol.json, scientific_validity) are preserved and reported unchanged.",
+  "inputs": {
+    "read": "the saved target checkpoints of a Batch C run (checkpoints/CKPT__<target_id>.rds: replicate estimates, per-replicate failure reasons, three logical diagnostic vectors, complete-case counts, seconds, and the one-row original summary) and the run's aggregate tables bootstrap_summary.csv, bootstrap_validity.csv, bootstrap_point_estimates.csv, batch_c_metadata.json, RUN_MANIFEST.csv",
+    "not_read": "participant data, the canonical CSV, resample indices (not stored), anything that would allow a sample to be reconstructed or a model to be refitted; the tool contains no fitting code and no data-import code (checked by a test)",
+    "outputs": "aggregate tables only: no replicate-level estimate is exported"
+  },
+  "scope": { "targets": 180, "binary_targets_expected": 60, "previously_flagged_targets_expected": 37, "expected_note": "expectations come from the Phase 3C.1 review; a mismatch is reported as a NOTE, not changed" },
+  "estimate_handling": {
+    "classes": "each saved estimate is exactly one of: finite; NA (a failed refit: missing); NaN; +Inf or -Inf. Counts of every class are reported separately and must add up to the number of attempted replicates.",
+    "finite_set": "the finite estimates are the 'successful refits' of the original rule (is.finite); every diagnostic below uses this set unless stated otherwise"
+  },
+  "extremeness_diagnostics": {
+    "label": "COEFFICIENT-BASED EXTREMENESS DIAGNOSTICS. A flag means that a saved estimate is large by the stated definition. It is NOT confirmed separation: fitted probabilities and fits are not available.",
+    "notation": "e = a finite replicate estimate; p = the primary M2-L coefficient of the target; s = the reference SE of the target (HC3 SE for continuous outcomes, model-based Wald SE for the binary outcome; both as recorded in the run's bootstrap_validity.csv); m = median of the finite estimates; MAD = 1.4826 x median(|e - m|) (scaled MAD)",
+    "definitions": [
+      { "id": "X1_abs_gt_1e6", "rule": "|e| > 1e6", "note": "magnitude no plausible log-odds per exposure unit; typical of divergent fits" },
+      { "id": "X2_gt_100_se", "rule": "|e - p| > 100 * s", "note": "PRIMARY DIAGNOSTIC DEFINITION used for tail ranks and omission summaries unless stated otherwise" },
+      { "id": "X3_gt_10_se", "rule": "|e - p| > 10 * s", "note": "broader" },
+      { "id": "X4_gt_10_mad", "rule": "|e - m| > 10 * MAD", "note": "robust outlier; not evaluated (reported as not evaluable) when MAD = 0" },
+      { "id": "X5_gt_1000_se", "rule": "|e - p| > 1000 * s", "note": "severe" }
+    ],
+    "primary_definition": "X2_gt_100_se",
+    "overlap": "overlap of each definition with the saved glm_not_converged, level_absent and other_aliased vectors is reported (counts only)"
+  },
+  "distribution_summaries": {
+    "quantile_probabilities": [0.001, 0.01, 0.025, 0.05, 0.25, 0.5, 0.75, 0.95, 0.975, 0.99, 0.999],
+    "quantile_type": 7,
+    "quantile_type_note": "descriptive quantiles use R's default type 7; the ORIGINAL percentile limits are always type 8 and are reconstructed separately",
+    "statistics": "n by class, median, IQR (type 7), MAD (raw and scaled), SD of the finite estimates, SD after omitting the X2 estimates, minimum, maximum, the selected quantiles, tail ranges: q0.975 - q0.5, q0.5 - q0.025, max - q0.975, q0.025 - min, and the ratios SD/s, (IQR/1.349)/s, scaled MAD/s and (q0.975 - q0.025)/(2 * 1.96 * s); the original Batch C SD-ratio flag value is recomputed from the checkpoints and compared with the run's recorded value"
+  },
+  "percentile_reconstruction": {
+    "rule": "the original 95% percentile limits: stats::quantile(finite estimates, c(0.025, 0.975), type = 8) when at least 20 estimates are finite, otherwise missing; also computed with an independent type-8 implementation",
+    "agreement_tolerance_relative": 1e-12,
+    "compared_with": "the one-row summary stored in the checkpoint and the run's bootstrap_summary.csv; exact (bitwise) agreement is reported separately",
+    "ranks": "for the lower and upper limit, the type-8 order-statistic positions j and j + 1 (j = floor(n p + (p + 1)/3 + 4 eps)); the number and share of flagged estimates among the order statistics at or beyond each limit (lowest j + 1 and highest n - j), and whether either order statistic that defines a limit is itself flagged"
+  },
+  "omission_sensitivity": {
+    "label": "DIAGNOSTIC ONLY. Limits recomputed after omitting the flagged estimates (type 8, at least 20 remaining) never replace the original intervals.",
+    "reported": "per target and definition: number omitted, filtered limits, change in each limit (absolute, relative to the original interval width, and in units of s), and whether the interval's inclusion of zero changes"
+  },
+  "provenance": {
+    "checkpoint_hashes": "SHA-256 of every checkpoint file, recorded before and after the audit (read-only check: the audit must leave every checkpoint unchanged)",
+    "signature_check": "each checkpoint carries a signature = string hash of (input hash | configuration hash | protocol hash | package-source fingerprint of the ORIGINAL run | target id | seed | replicates); the tool recomputes it from the run's recorded metadata",
+    "original_run": "batch_c_metadata.json hashes, RUN_MANIFEST verification, the original run's source fingerprint compared with the audit tool's own source manifest (differences are expected and listed)",
+    "tool_source": "SHA-256 source manifest and fingerprint of the diagnostic tool's package source, computed at start and end of the audit; changes during the run are reported",
+    "known_unavailable_evidence": [
+      "checkpoint creation time inside the file (only the file-system modification time exists)",
+      "the original run manifest does not list the checkpoint files, so the checkpoint hashes cannot be verified against an original hash list; the recorded hashes document the state at audit time",
+      "resample indices and random-number states",
+      "per-replicate fitted probabilities or model fits (separation cannot be confirmed)",
+      "the end-of-run source manifest of the original run",
+      "the signature is a non-cryptographic string hash: it binds a checkpoint to the recorded run parameters but is not tamper-proof"
+    ]
+  },
+  "statuses": {
+    "EXECUTION": "the audit ran to completion",
+    "CHECKPOINT_INTEGRITY": "all 180 checkpoints present, readable, schema-valid (only the declared fields, no data frame other than the one-row summary), unique, consistent lengths, estimate classes consistent with the failure reasons, signature recomputed and matching; no unexpected checkpoint files",
+    "CHECKPOINTS_UNCHANGED": "SHA-256 of every checkpoint identical before and after",
+    "ACCOUNTING": "for every target n_finite + n_NA + n_NaN + n_Inf = attempted, and the counts equal the run's summary (successful, failed)",
+    "QUANTILE_RECONSTRUCTION": "the reconstructed type-8 limits and median equal the stored summary and the run's summary within the declared tolerance for all 180 targets",
+    "ORIGINAL_RUN_PROVENANCE": "the original run's manifest verifies and its metadata hashes are present",
+    "SOURCE_INTEGRITY": "the audit tool's package source did not change during the audit",
+    "EXTREMENESS_DIAGNOSTICS": "descriptive only (counts of targets with extreme estimates by definition); not a pass/fail status"
+  }
+}

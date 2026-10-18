@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "tool": "Phase 3D.3 simulation diagnostic for the simultaneous critical values of the nine final L01-L56 DLMs",
+  "declared": "DIAGNOSTIC ONLY. Declared before any study execution. It reads the study CSV, the validation run's aggregate tables and the DLM reference bundle; it never changes a fit, epsilon, simulation method, seed, draw count, reference, acceptance criterion or status of the production analysis or of any earlier validation run, and it never reclassifies a failure.",
+  "question": "In dlmvalidate_20261002_163715_0c0b the simultaneous critical values of the package and of the independent route (and of the audited reconstruction) differ by 0.1% to 0.5% in some models although the fitted covariances agree to 1e-9 or better. Is the difference explained by the orientation (eigenvector signs) of the covariance factor used to turn identical standard-normal draws into multivariate-normal draws?",
+  "saved_matrices": "none: the covariance matrices of the lag-basis coefficients were not saved by any earlier run. They are obtained here from the study CSV: the PRODUCTION covariance and draws are captured from the unchanged production function siw_fit_dlm (a copy of its closure whose siw_mvn_draws call records its arguments and result; computed values are returned unchanged and verified identical to a plain call), the independent covariance from siw_dlm_indep_fit.",
+  "routes": {
+    "production": "siw_fit_dlm with the accepted configuration (glm epsilon 1e-12, HC3 for continuous outcomes, model-based covariance for the binary outcome), the package lag basis siw_lag_basis (splines::ns), Sigma passed to MASS::mvrnorm inside siw_mvn_draws, seed = 20260729 + 100 x metric_index + outcome_index, draws 5,000 (final) and 10,000 (audited draw count)",
+    "independent": "siw_dlm_indep_fit (own natural-spline basis, own fit and HC3 / inverse information), covariance in the coordinates of its own basis, own mvrnorm clone (same algorithm, same random-number consumption), same seed and draw counts"
+  },
+  "gaussian_draw_layout": "X = matrix(rnorm(p * n), n) with p = 3 coefficients and n draws, filled column-wise from the seeded Mersenne-Twister / Inversion stream; row i is draw i. Both routes consume the stream identically; identity of X between the two routes is verified exactly.",
+  "coordinates": "The two routes parameterise the lag function with different orthonormal bases of the same space, B_ind = B_prod R with R orthogonal; the covariances are related by Sigma_prod = R Sigma_ind R'. Eigenvectors correspond up to sign and the lag-space vectors b_j = B v_j are identical between routes when the eigen-structure is the same. All sign comparisons are therefore made in lag space, not in coefficient space.",
+  "methods_compared": [
+    { "id": "production_eigen", "definition": "F = V D with (V, D) from eigen(Sigma, symmetric = TRUE) exactly as MASS::mvrnorm (signs as LAPACK returns them); Z = t(F %*% t(X)); bitwise equal to the production draws for the production route (verified)" },
+    { "id": "aligned_eigen", "definition": "the same eigen decomposition with each eigenvector's sign fixed in lag space: b = B v, sign chosen so that the component of b with the largest absolute value is positive; coordinate-free, so both routes use the same orientation" },
+    { "id": "symmetric_sqrt", "definition": "F = V D V' (the symmetric square root of Sigma); invariant to eigenvector signs; DIAGNOSTIC ONLY (a different factor, hence a different Monte Carlo realisation from production; never a replacement)" }
+  ],
+  "criteria": {
+    "reconstruction_relative_tolerance": 1e-12,
+    "reconstruction_rule": "max |F F' - S| / max |S| (coefficient space) and the same in lag space, for every factor, route and model, where S is the matrix eigen(symmetric = TRUE) actually uses (the lower triangle, mirrored); the asymmetry of the supplied covariance and the error against it are reported separately",
+    "covariance_agreement": "max |B_prod Sigma_prod B_prod' - B_ind Sigma_ind B_ind'| / max |.| (lag space) and max |Sigma_prod - R Sigma_ind R'| / max |Sigma_prod|; reported, descriptive",
+    "production_replica_exact": "replica of the production factor equals the captured production draws bitwise, and the replica critical value equals the production critical value bitwise and the value saved in the validation run (critical_package at 5,000 draws, audited_critical_package at 10,000) to 1e-12",
+    "explained": "allowance = max(1e-9, 10 x the lag-space relative covariance difference between the routes x the production critical value) (a covariance difference changes a critical value continuously and by about that much). A production cross-route difference larger than the allowance is a DISCREPANCY; it is EXPLAINED by orientation if the aligned_eigen critical values of the two routes agree within the allowance AND flipping the signs of the components whose lag-space cosine between routes is -1 in the independent factor reproduces the production critical value within the allowance",
+    "near_repeated_eigenvalues": "flagged when the ratio of adjacent eigenvalues exceeds 0.99 (orientation within the eigenspace is then not defined by signs alone); ill-conditioned when the largest-to-smallest eigenvalue ratio exceeds 1e6",
+    "sign_pattern_search": "for each route and draw count the critical value is recomputed for every distinct sign pattern of the production factor columns (2^p / 2 distinct values, because the maximum absolute t is unchanged by flipping all signs); a pattern reproduces a target critical value if it agrees to 1e-9; targets: the other route's production value and, at 10,000 draws, the audited reconstruction value from the DLM reference bundle",
+    "exactness_bands_descriptive": { "EXACT": "absolute difference <= 1e-9", "NEAR_EXACT": "<= 1e-6 (a continuous effect of a covariance difference)", "REALISATION_DIFFERENCE": "> 1e-6" },
+    "no_pass_fail_on_production": "the statuses below describe the diagnostic itself; none changes a validation status"
+  },
+  "metrics_defined": {
+    "relative_critical_value_change": "|c_a - c_b| / c_b (b = the reference value of the comparison)",
+    "relative_band_half_width_change": "the simultaneous band is estimate +- c x SE, so its half-width changes by exactly the same relative amount as c; the full width likewise; relative to the POINTWISE half-width (1.96 x SE) the change is |c_a - c_b| / 1.96",
+    "endpoint_change_in_se_units": "|c_a - c_b| (the endpoint estimate +- c x SE moves by |c_a - c_b| standard errors of that lag)",
+    "endpoint_change_absolute": "|c_a - c_b| x SE_l, reported for the lag with the largest SE",
+    "note": "the figure 0.42% quoted in the Phase 3D.2 review for UCLA x UTCI is the relative critical-value change; it was mislabelled there as a percentage of the lag SE (see erratum in that report). In SE units the same endpoint change is 0.0106 standard errors."
+  },
+  "statuses": {
+    "EXECUTION": "the diagnostic ran for all nine models",
+    "PRODUCTION_REPLICA": "criterion above, for all nine models and both draw counts",
+    "FACTOR_RECONSTRUCTION": "every factor reconstructs its covariance within the declared tolerance",
+    "COVARIANCE_AGREEMENT": "descriptive: largest lag-space covariance difference between the routes, reported not judged",
+    "MECHANISM_EXPLANATION": "PASS if every production cross-route difference larger than 1e-9 is EXPLAINED; PARTIAL if some are not (listed); NOT_APPLICABLE if there is none",
+    "REFERENCE_PATTERN": "number of reference mismatches (|production - reference| > 1e-9 at 10,000 draws) reproduced by some sign pattern of the production factor; NOT_TESTED if no reference supplied. A pattern match shows that the reference value is one of the orientation variants of the same simulation, not that the legacy code flipped that sign",
+    "SOURCE_INTEGRITY": "package source unchanged during the run",
+    "rule": "NOT_TESTED is never PASS."
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "rainfall_anomaly_report",
+  "file": "rainfall_anomaly_report.csv",
+  "primary_key": "item",
+  "ordering": "deterministic: configuration order of outcomes, metrics, windows/lags, tiers",
+  "columns": [
+    {
+      "name": "item",
+      "type": "string"
+    },
+    {
+      "name": "value",
+      "type": "integer"
+    },
+    {
+      "name": "note",
+      "type": "string"
+    }
+  ]
+}
